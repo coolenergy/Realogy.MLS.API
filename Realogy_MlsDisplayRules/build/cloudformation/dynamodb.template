@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  RealogyResourcePrefix:
+    Type: "String"
+    Description: "All AWS resources should be prefixed with this"
+  RealogyStageName:
+    Type: "String"
+    Description: "Realogy Stage Name"
+
+Resources:
+  MlsDisplayRulesRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${RealogyResourcePrefix}role"
+      Path: "/"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service:
+                - "ecs-tasks.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Policies:
+        - PolicyName: "Root"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "xray:*"
+                  - "dynamodb:*"
+                  - "s3:*"
+                  - "cloudwatch:PutMetricAlarm"
+                  - "cloudwatch:DescribeAlarms"
+                  - "cloudwatch:GetMetricStatistics"
+                  - "cloudwatch:SetAlarmState"
+                  - "cloudwatch:DeleteAlarms"
+                  - "secretsmanager:GetSecretValue"
+                  - "secretsmanager:CreateSecret"
+                  - "ssm:DescribeParameters"
+                  - "ssm:GetParameter"
+                  - "ssm:GetParametersByPath"
+                Resource: "*"

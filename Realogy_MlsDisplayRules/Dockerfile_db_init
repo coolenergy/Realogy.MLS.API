@@ -1,0 +1,4 @@
+
+FROM mongo:latest
+COPY test_data.json /test_data.json
+RUN sleep 5

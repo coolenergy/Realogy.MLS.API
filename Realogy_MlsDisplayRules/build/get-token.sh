@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+curl --request POST  --url https://realogy.oktapreview.com/oauth2/ausdtpyw647fbrcPi0h7/v1/token --header 'accept: application/json' --header 'authorization: Basic MG9hamRnMXBnN2wzczJ2a08waDc6cE1PaGVUTlRacVloU2VsOWpOVThkdzNqa0xjNnZjR0RzN09qazlBYw==' --header 'cache-control: no-cache' --header 'content-type: application/x-www-form-urlencoded' --data 'grant_type=client_credentials&scope=https://dataservices.zaplabs.com/mlslistingsapi' | jq '.access_token'

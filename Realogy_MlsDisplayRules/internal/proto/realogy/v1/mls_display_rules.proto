@@ -1,0 +1,474 @@
+syntax = "proto3";
+
+package realogy.api.mls.displayrules.v1;
+
+option go_package = "realogy.com/api/mls/displayrules/v1";
+option java_package = "com.realogy.api.mls.displayrules.v1";
+option java_multiple_files = true;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "internal/proto/realogy/v1/tagger.proto";
+import "grpc-gateway/protoc-gen-openapiv2/options/annotations.proto";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+    info: {
+        title: "MLS-Display-Rules";
+        description: "\n**Note:** *Realogy hosts are deprecated (https://\\*.api.realogy.com). *We recommend the use of Anywhere API hosts (https://\\*.api.anywhere.re).**\n \n \n **New Consumers** *- Use https://\\*.api.anywhere.re*\n \n \n **Existing Consumers** *- https://\\**.api.realogy.com *will continue to work as-is, but plan to use https://\\*.api.anywhere.re host*.\n\n\n\n## Overview\nThe MLS API provides listings data with different search criteria such as, city, state, postal code, agent, and sub-division. In addition, it provides active and sold listings.\n## Use this API to\n\n- get listing data.\n- get active and sold listings.\n- search listings with different filters.\n## How the MLS API Works\n\n- Provides listing data.\n- Rich search criteria.\n- Real-time data from different source systems.  \n## Generic Information\n- A response is always sent for a request. Make sure that your application does not time-out.\n- If the API is triggered again, avoid use of short retry periods to keep out of rate limiting scenarios.\n\n## Prerequisites\nTo use this API in a production environment, you must have the following details:\n\n- API Key.\n- Okta credentials.\n- Okta scope - https://dataservices.eap.com/eaplistingsapi.\n\n\n## How to Register and Create an Account\nTo use the MLS API, do the steps as follows: \n\n  1. Go to [Anywhere Developer Portal](https://developers.anywhere.re) and\n[Login](https://developers.anywhere.re/user/me).\n2. See the API product features and requirements.\n3. Use Get Access and get the API credentials.\n4. Refer to [How it Works](https://developers.anywhere.re/docs/how-it-works) for more details.\n## Sandbox Access\n\n For Sandbox access, visit the Sandbox Portal URL <a href=\"https://developers.anywhere.re/add-app\" target=\"_blank\">Get Sandbox product access</a>.\n \n## Production Access\n\n  For Production access, visit the Production Portal URL <a href=\"https://developers.anywhere.re/add-app\" target=\"_blank\">Get Production product access</a>.\n";
+        version: "1.0";
+        extensions: {
+            key: "x-hous-product-name";
+            value {
+                string_value: "MLS Data Service";
+            }
+        }
+        extensions: {
+            key: "x-hous-product-version";
+            value {
+                string_value: "1.0";
+            }
+        }
+        extensions: {
+            key: "x-hous-version";
+            value {
+                string_value: "v1.0";
+            }
+        }
+        extensions: {
+            key: "x-anonymous";
+            value {
+                string_value: "FALSE";
+            }
+        }
+    };
+    host: "api.anywhere.re";
+	base_path: "/v1.0/mls-display-rules";
+    schemes: HTTPS;
+    security_definitions: {
+        security: {
+            key: "AccessToken";
+            value: {
+                type: TYPE_API_KEY;
+                in: IN_HEADER;
+                name: "X-ACCESS-TOKEN"
+            }
+        }
+        security: {
+            key: "ApiKey";
+            value: {
+                type: TYPE_API_KEY;
+                in: IN_HEADER;
+                name: "X-API-KEY"
+            }
+        }
+    }
+    security: {
+        security_requirement: {
+            key: "AccessToken";
+            value: {}
+        }
+        security_requirement: {
+            key: "ApiKey";
+            value: {}
+        }
+	}
+    responses: {
+        key: "200";
+        value: {
+            description: "A successful response.";      
+            schema: {
+                json_schema: {
+                    ref: ""
+                }        
+            }        
+        }
+    }
+    responses: {
+        key: "400";
+        value: {
+            description: "Bad request";      
+            schema: {
+                json_schema: {
+                    ref: "#/components/schemas/ErrorResponse_400"
+                }        
+            }        
+        }
+    }
+    responses: {
+        key: "401";
+        value: {
+            description: "Unauthorized";      
+            schema: {
+                json_schema: {
+                    ref: "#/components/schemas/ErrorResponse_401"
+                }     
+            }        
+        }
+    }
+    responses: {
+        key: "404";
+        value: {
+            description: "Not found";      
+            schema: {
+                json_schema: {
+                    ref: "#/components/schemas/ErrorResponse_404"
+                }        
+            }        
+        }
+    }
+    responses: {
+        key: "429";
+        value: {
+            description: "Too Many Requests";      
+            schema: {
+                json_schema: {
+                    ref: "#/components/schemas/ErrorResponse_429"
+                }        
+            }        
+        }
+    }
+    responses: {
+        key: "500";
+        value: {
+            description: "Internal Server Error";      
+            schema: {
+                json_schema: {
+                    ref: "#/components/schemas/ErrorResponse_500"
+                }        
+            }        
+        }
+    }
+    responses: {
+        key: "502";
+        value: {
+            description: "Bad Gateway";      
+            schema: {
+                json_schema: {
+                    ref: "#/components/schemas/ErrorResponse_502"
+                }        
+            }        
+        }
+    }
+    responses: {
+        key: "503";
+        value: {
+            description: "Service Unavailable";      
+            schema: {
+                json_schema: {
+                    ref: "#/components/schemas/ErrorResponse_503"
+                }        
+            }        
+        }
+    }
+    responses: {
+        key: "504";
+        value: {
+            description: "Gateway Timeout";      
+            schema: {
+                json_schema: {
+                    ref: "#/components/schemas/ErrorResponse_504"
+                }        
+            }        
+        }
+    }
+};
+
+// Mls Display Rules API's.
+service MlsDisplayRulesService {
+
+    // Get MLS display rules
+    rpc GetMlsDisplayRules (GetMlsDisplayRulesByRequest) returns (GetMlsDisplayRulesByResponse) {
+        option (google.api.http) = {
+            get: "/mls/displayrules"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {            
+            description: "Get all the MLS display rules for active MLS. Pagination is supported through offset and limit parameters.";
+            security: {
+                security_requirement: {
+                    key: "AccessToken";
+                    value: {}
+                }
+                security_requirement: {
+                    key: "ApiKey";
+                    value: {}
+                }
+            }
+            responses: {
+                key: "200";
+                value: {
+                  description: "A successful response.";      
+                  schema: {
+                    json_schema: {
+                        ref: "#/components/schemas/v1GetMlsDisplayRulesByResponse"
+                    }        
+                  }        
+                }
+            }                 
+        };
+    }
+
+    // Get MLS Display Rules
+    rpc GetMlsDisplayRulesIgnoreStatus (GetMlsDisplayRulesByRequest) returns (GetMlsDisplayRulesByResponse) {
+        option (google.api.http) = {
+            get: "/mls/internal/displayrules"
+        };
+    }
+
+    // Get Mls Display Rules
+    rpc GetMlsDisplayRulesBySource (GetMlsDisplayRulesBySourceRequest) returns (GetMlsDisplayRulesBySourceResponse) {
+        option (google.api.http) = {
+            get: "/mls/displayrules/source/{source_system_key}"
+        };
+        option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {            
+            description: "This method gets MLS Display Rules for a given MLS source.";
+            security: {
+                security_requirement: {
+                    key: "AccessToken";
+                    value: {}
+                }
+                security_requirement: {
+                    key: "ApiKey";
+                    value: {}
+                }
+            }
+            responses: {
+                key: "200";
+                value: {
+                  description: "A successful response.";      
+                  schema: {
+                    json_schema: {
+                        ref: "#/components/schemasv1GetMlsDisplayRulesBySourceResponse/"
+                    }        
+                  }        
+                }
+            }                 
+        };
+    }
+
+    // Get Mls Display Rules for a given mls source, ignoring active or inactive status.
+    rpc GetMlsDisplayRulesBySourceIgnoreStatus (GetMlsDisplayRulesBySourceRequest) returns (GetMlsDisplayRulesBySourceResponse) {
+        option (google.api.http) = {
+            get: "/mls/internal/displayrules/source/{source_system_key}"
+        };
+    }
+
+    rpc UpdateMlsDisplayRulesStatus (UpdateMlsDisplayRulesStatusRequest) returns (UpdateMlsDisplayRulesStatusResponse) {
+        option (google.api.http) = {
+             post: "/mls/displayrules"
+             body: "mlsDisplayRulesStatus"
+         };
+    }
+
+    // Update MLS Display Rules for given source
+    rpc UpdateMlsDisplayRulesData (UpdateMlsDisplayRulesDataRequest) returns (UpdateMlsDisplayRulesDataResponse) {
+        option (google.api.http) = {
+             post: "/mls/internal/displayrules/data"
+             body: "mlsDisplayRulesData"
+         };
+    }
+
+    // Stream mls display rules
+    rpc StreamMlsDisplayRules (google.protobuf.Empty) returns (stream MlsDisplayRules) {
+        option (google.api.http) = {
+            get: "/mls/stream/displayrules"
+        };
+    }
+
+    // Stream mls display rules events.
+    rpc StreamMlsDisplayRulesEvent (StreamMlsDisplayRulesEventRequest) returns (stream StreamMlsDisplayRulesEventResponse) {
+        option (google.api.http) = {
+            get: "/mls/stream/displayrules/event"
+        };
+    }
+
+    // Health Check MLS Display Rules API.
+    rpc HealthCheck (HealthRequest) returns (HealthReply) {
+        option (google.api.http).get = "/internal/health";
+    }
+}
+
+// Request message for mls display rules. Accepts offset and limit as optional parameters for pagination.
+message GetMlsDisplayRulesByRequest {
+    int32 offset = 1;
+    int32 limit = 2;
+}
+
+// Response message for mls display rules.
+message GetMlsDisplayRulesByResponse {
+    repeated MlsDisplayRules mls_display_rules = 1;
+}
+
+// Request message for mls display rules by mls source.
+message GetMlsDisplayRulesBySourceRequest {
+    string source_system_key = 1;
+}
+// The request message for update mls display rules status.
+message UpdateMlsDisplayRulesStatusRequest {
+    MlsDisplayRulesStatus mlsDisplayRulesStatus = 1 [(tags) = "graphql:\"mlsDisplayRulsStatus,optional\" bson:\"mls_display_rules_status\""];
+}
+// The request message for update mls display rules data.
+message UpdateMlsDisplayRulesDataRequest {
+    MlsDisplayRulesUpdateData mlsDisplayRulesData = 1 [(tags) = "graphql:\"mlsDisplayRulsData,optional\" bson:\"mls_display_rules_data\""];
+}
+
+// Response message for mls display rules status update by mls source.
+message UpdateMlsDisplayRulesDataResponse {
+    MlsDisplayRules mls_display_rules = 1;
+}
+
+// Response message for mls display rules status update by mls source.
+message MlsDisplayRulesStatus {
+    string source_system_key = 1    [(tags) = "graphql:\"sourceSystemKey,optional\" bson:\"source_system_key\""];
+    bool is_active = 2          [(tags) = "graphql:\"isActive,optional\" bson:\"is_active\""];
+}
+
+// Response message for mls display rules status update by mls source.
+message UpdateMlsDisplayRulesStatusResponse {
+    MlsDisplayRules mls_display_rules = 1;
+}
+
+// Response message for mls display rules by mls source.
+message GetMlsDisplayRulesBySourceResponse {
+    MlsDisplayRules mls_display_rules = 1;
+}
+
+message StreamMlsDisplayRulesRequest {
+
+}
+
+// The request message for streaming mls display rules events.
+message StreamMlsDisplayRulesEventRequest {
+    string source_system_key = 1    [(tags) = "graphql:\"sourceSystemKey,optional\" bson:\"source_system_key\""];
+    string event_type = 99          [(tags) = "graphql:\"eventType,optional\" bson:\"event_type\""];
+    string resume_event_id = 100    [(tags) = "graphql:\"eventType,optional\" bson:\"resume_event_id\""];
+}
+
+// The response message for streaming mls display rules events.
+message StreamMlsDisplayRulesEventResponse {
+    EventMetaData event_meta_data = 1       [(tags) = "graphql:\"id,optional\" json:\"id\" bson:\"_id\""];
+    string event_type = 2                   [(tags) = "graphql:\"eventType,optional\" json:\"eventType\" bson:\"operationType\""];
+    MlsDisplayRules mls_display_rules = 3   [(tags) = "graphql:\"mlsDisplayRules,optional\" json:\"mlsDisplayRules\" bson:\"fullDocument\""];
+}
+
+// Meta data for streaming events.
+message EventMetaData {
+    string data = 1                [(tags) = "graphql:\"id,optional\" bson:\"_data\""];
+}
+
+// Reserved message type for healthcheck.
+message HealthRequest {
+}
+
+// Response message type for health check.
+message HealthReply {
+    string status = 1;
+}
+
+// MLS Display Rules Data.
+message MlsDisplayRules {
+    // Internal MLS source name that's used in MDP (MLS Data Platform).
+    string source = 1                                       [(tags) = "graphql:\"source,optional\" json:\"source\" bson:\"source\""];
+    // URL to the copyright logo provided by the MLS that is supposed to be used on an IDX website.
+    string copyright_logo = 2                               [(tags) = "graphql:\"copyrightLogo,optional\" json:\"copyrightLogo\" bson:\"copyrightLogo\""];
+    // A Standard Disclaimer format with some placeholder to insert appropriate company info.
+    string disclaimer = 3                                   [(tags) = "graphql:\"disclaimer,optional\" json:\"disclaimer\" bson:\"disclaimer\""];
+    // Flag that specifies if the MLS wants public comments to not be shown on an IDX website. Hide if "true". Default is "false".
+    bool hide_comments = 5                                  [(tags) = "graphql:\"hideComments,optional\" json:\"hideComments\" bson:\"hideComments\""];
+    // Flag that specifies if the last timestamp of updates for a given MLS should be displayed or not. Hide if "true". Default is "false".
+    bool hide_last_checked_for_updates = 7                  [(tags) = "graphql:\"hideLastCheckedForUpdates,optional\" json:\"hideLastCheckedForUpdates\" bson:\"hideLastCheckedForUpdates\""];
+    // Flag that specifies if the like button should be shown or not. Hide if "true". Default is "false".
+    bool hide_like_button = 8                               [(tags) = "graphql:\"hideLikeButton,optional\" json:\"hideLikeButton\" bson:\"hideLikeButton\""];
+    // Flag that specifies if the listing date should be shown or not. Hide if "true". Default is "false".
+    bool hide_listing_date = 9                              [(tags) = "graphql:\"hideListingDate,optional\" json:\"hideListingDate\" bson:\"hideListingDate\""];
+    // Flag that specifies if Mortgage Calculations section should be shown or not. Hide if "true". Default is "false".
+    bool hide_mortgage_calculations = 10                    [(tags) = "graphql:\"hideMortgageCalculations,optional\" json:\"hideMortgageCalculations\" bson:\"hideMortgageCalculations\""];
+    // Flag that specifies if the popularity index should be shown or not. Hide if "true". Default is "false".
+    bool hide_popularity = 11                               [(tags) = "graphql:\"hidePopularity,optional\" json:\"hidePopularity\" bson:\"hidePopularity\""];
+    // Flag that specifies if the listing price history should be shown or not. Hide if "true". Default is "false".
+    bool hide_price_history = 12                            [(tags) = "graphql:\"hidePriceHistory,optional\" json:\"hidePriceHistory\" bson:\"hidePriceHistory\""];
+    // Flag that specifies if the property insights should be shown or not. Hide if "true". Default is "false".
+    bool hide_property_insights = 13                        [(tags) = "graphql:\"hidePropertyInsights,optional\" json:\"hidePropertyInsights\" bson:\"hidePropertyInsights\""];
+    // Flag that specifies if the school district information should be shown or not. Hide if "true". Default is "false".
+    bool hide_school_district = 14                          [(tags) = "graphql:\"hideSchoolDistrict,optional\" json:\"hideSchoolDistrict\" bson:\"hideSchoolDistrict\""];
+    // Flag that specifies if the number of views of a listings on the website should be shown or not. Hide if "true". Default is "false".
+    bool hide_views = 15                                    [(tags) = "graphql:\"hideViews,optional\" json:\"hideViews\" bson:\"hideViews\""];
+    // Flag that specifies if the walk score should be shown or not. Hide if "true". Default is "false".
+    bool hide_walk_score = 16                               [(tags) = "graphql:\"hideWalkScore,optional\" json:\"hideWalkScore\" bson:\"hideWalkScore\""];
+    // Flag that specifies if the year built should be shown or not. Hide if "true". Default is "false".
+    bool hide_year_built = 17                               [(tags) = "graphql:\"hideYearBuilt,optional\" json:\"hideYearBuilt\" bson:\"hideYearBuilt\""];
+    bool honor_mls_data_rectangle = 18                      [(tags) = "graphql:\"honorMlsDataRectangle,optional\" json:\"honorMlsDataRectangle\" bson:\"honorMlsDataRectangle\""];
+    // House Price Appreciation Code
+    string hpa_code = 19                                    [(tags) = "graphql:\"hpaCode,optional\" json:\"hpaCode\" bson:\"hpaCode\""];
+    // Flag that shows if an MLS is currently active or not. Active if "true".
+    bool is_active = 21                                     [(tags) = "graphql:\"isActive,optional\" json:\"isActive\" bson:\"isActive\""];
+    // Font size to use for Listing office description. e.g. "font-18" for SC_HHMLS, "font-14" for NH_NNEREN, WI_WIREX, FIRSTMLS
+    string listing_office_size = 37                         [(tags) = "graphql:\"listingOfficeSize,optional\" json:\"listingOfficeSize\" bson:\"listingOfficeSize\""];
+    // URL to the logo of the MLS that can either be downloaded or referenced.
+    string logo = 39                                        [(tags) = "graphql:\"logo,optional\" json:\"logo\" bson:\"logo\""];
+    // Display height of the logo on a website.
+    int32 logo_display_height = 40                          [(tags) = "graphql:\"logoDisplayHeight,optional\" json:\"logoDisplayHeight\" bson:\"logoDisplayHeight\""];
+    // Actual height of the logo available.
+    int32 logo_height = 41                                  [(tags) = "graphql:\"logoHeight,optional\" json:\"logoHeight\" bson:\"logoHeight\""];
+    // Actual width of the logo available.
+    int32 logo_width = 42                                   [(tags) = "graphql:\"logoWidth,optional\" json:\"logoWidth\" bson:\"logoWidth\""];
+    // Long description name of the MLS.
+    string long_name = 43                                   [(tags) = "graphql:\"longName,optional\" json:\"longName\" bson:\"longName\""];
+    // This is the MLS public Website URL if available.
+    string public_website_url = 50                          [(tags) = "graphql:\"publicWebsiteUrl,optional\" json:\"publicWebsiteUrl\" bson:\"publicWebsiteUrl\""];
+    // Short name of the MLS. Can be used to display along with long name in drop down select boxes.
+    string short_name = 52                                  [(tags) = "graphql:\"shortName,optional\" json:\"shortName\" bson:\"shortName\""];
+    // Flag that specifies if contingent listings can be shown or not. Yes if "true". Default is "false".
+    bool show_contingent = 53                               [(tags) = "graphql:\"showContingent,optional\" json:\"showContingent\" bson:\"showContingent\""];
+    // Flag that specifies if listing data attribution info can be shown or not. Yes if "true". Default is "false".
+    bool show_data_attribution = 54                         [(tags) = "graphql:\"showDataAttribution,optional\" json:\"showDataAttribution\" bson:\"showDataAttribution\""];
+    // Flag that specifies if a disclaimer has to be shown or not. Possible values are : NOT_SHOWN = 0, SHOW_PRELOGIN = 1, SHOW_POSTLOGIN = 2, SHOW_PRE_AND_POST_LOGIN = 3
+    // Default is NOT_SHOWN = 0
+    // use the following logic to display logo accordingly,
+    // return(disclaimer != null && (showDisclaimer == SHOW_PRE_AND_POSTLOGIN || (showDisclaimer ? showLogo == SHOW_POSTLOGIN : showDisclaimer == SHOW_PRELOGIN)));
+    int32 show_disclaimer = 56                               [(tags) = "graphql:\"showDisclaimer,optional\" json:\"showDisclaimer\" bson:\"showDisclaimer\""];
+    // Flag that specifies if listing agent for the listing can be shown or not. Yes if "true". Default is "false".
+    bool show_listing_agent = 58                            [(tags) = "graphql:\"showListingAgent,optional\" json:\"showListingAgent\" bson:\"showListingAgent\""];
+    // Flag that specifies if a logo has to be shown or not. Possible values are : NOT_SHOWN = 0, SHOW_PRELOGIN = 1, SHOW_POSTLOGIN = 2, SHOW_PRE_AND_POST_LOGIN = 3
+    // Default is NOT_SHOWN = 0
+    // use the following logic to display logo accordingly,
+    // return(logo != null && (showLogo == SHOW_PRE_AND_POSTLOGIN || (postlog ? showLogo == SHOW_POSTLOGIN : showLogo == SHOW_PRELOGIN)));
+    int32 show_logo = 59                                    [(tags) = "graphql:\"showLogo,optional\" json:\"showLogo\" bson:\"showLogo\""];
+    // Flag that specifies if logo of the MLS can be shown or not in a listing display. Yes if "true". Default is "false".
+    bool show_mls_number = 61                               [(tags) = "graphql:\"showMlsNumber,optional\" json:\"showMlsNumber\" bson:\"showMlsNumber\""];
+    // Flag that specifies if new construction certificate of a listing can be shown or not. Yes if "true". Default is "false".
+    bool show_new_construction_cert = 62                    [(tags) = "graphql:\"showNewConstructionCert,optional\" json:\"showNewConstructionCert\" bson:\"showNewConstructionCert\""];
+    // Flag that specifies if the listing office phone can be shown or not. Yes if "true". Default is "false".
+    bool show_office_phone_detail = 63                      [(tags) = "graphql:\"showOfficePhoneDetail,optional\" json:\"showOfficePhoneDetail\" bson:\"showOfficePhoneDetail\""];
+    // Flag that specifies if the Listing Office Phone can be shown or not on the details page. Yes if "true". Default is "false".
+    bool show_office_phone_on_hd = 64                       [(tags) = "graphql:\"showOfficePhoneOnHd,optional\" json:\"showOfficePhoneOnHd\" bson:\"showOfficePhoneOnHd\""];
+    // Flag that specifies if listing office phone can be shown or not on the search results page. Yes if "true". Default is "false".
+    bool show_office_phone_on_results = 65                  [(tags) = "graphql:\"showOfficePhoneOnResults,optional\" json:\"showOfficePhoneOnResults\" bson:\"showOfficePhoneOnResults\""];
+    // Default is "false".
+    bool show_office_phone_results = 66                     [(tags) = "graphql:\"showOfficePhoneResults,optional\" json:\"showOfficePhoneResults\" bson:\"showOfficePhoneResults\""];
+    // Flag that specifies if listing office phone can be shown or not under the agent/property photo. Yes if "true". Default is "false".
+    bool show_office_under_photo = 67                       [(tags) = "graphql:\"showOfficeUnderPhoto,optional\" json:\"showOfficeUnderPhoto\" bson:\"showOfficeUnderPhoto\""];
+    // Flag that specifies if tract names for a listing can be shown or not. Yes if "true". Default is "false".
+    bool use_tract_names = 71                               [(tags) = "graphql:\"useTractNames,optional\" json:\"useTractNames\" bson:\"useTractNames\""];
+    // Flag that specifies if the agent tile should be shown or not. Possible values 0 -> MustDisplay, 1 -> MustNotDisplay and 2 -> NoRestrictions. Default is 0.
+    DisplayRule agent_tile_attribution_rule = 72            [(tags) = "graphql:\"agentTileAttributionRule,optional\" json:\"agentTileAttributionRule\" bson:\"agentTileAttributionRule\""];
+    // Flag that specifies if the agent phone attribution should be shown or not. Possible values 0 -> MustDisplay, 1 -> MustNotDisplay and 2 -> NoRestrictions. Default is 0.
+    DisplayRule agent_phone_attribution_rule = 73           [(tags) = "graphql:\"agentPhoneAttributionRule,optional\" json:\"agentPhoneAttributionRule\" bson:\"agentPhoneAttributionRule\""];
+    // Flag that specifies if the buyer agent commission should be shown or not. Possible values 0 -> MustDisplay, 1 -> MustNotDisplay and 2 -> NoRestrictions. Default is 0.
+    DisplayRule buyer_agent_comm_display_rule = 74          [(tags) = "graphql:\"buyerAgentCommDisplayRule,optional\" json:\"buyerAgentCommDisplayRule\" bson:\"buyerAgentCommDisplayRule\""];
+    // The standardized source system name (rdm - Referential Data Management) that should be prefixed with state code followed by underscore and the existing source name. Ex: ML (Colorado) should be CO_ML.
+    string rdm_source_system_key = 75                       [(tags) = "graphql:\"rdmSourceSystemKey,optional\" bson:\"rdm_source_system_key\""];
+}
+
+enum DisplayRule {
+    MustDisplay=0;
+    MustNotDisplay=1;
+    NoRestrictions=2;
+}
+
+// MLS Display Rules Data.
+message MlsDisplayRulesUpdateData {
+    // TODO: Add description for the fields.
+    string source_system_key = 1                            [(tags) = "graphql:\"sourceSystemKey,optional\" bson:\"source_system_key\""];
+    string disclaimer = 3                                   [(tags) = "graphql:\"disclaimer,optional\" json:\"disclaimer\" bson:\"disclaimer\""];
+    string long_name = 43                                   [(tags) = "graphql:\"longName,optional\" json:\"longName\" bson:\"long_name\""];
+}

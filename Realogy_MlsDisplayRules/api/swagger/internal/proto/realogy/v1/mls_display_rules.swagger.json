@@ -1,0 +1,1124 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "MLS-Display-Rules",
+    "description": "\n**Note:** *Realogy hosts are deprecated (https://\\*.api.realogy.com). *We recommend the use of Anywhere API hosts (https://\\*.api.anywhere.re).**\n \n \n **New Consumers** *- Use https://\\*.api.anywhere.re*\n \n \n **Existing Consumers** *- https://\\**.api.realogy.com *will continue to work as-is, but plan to use https://\\*.api.anywhere.re host*.\n\n\n\n## Overview\nThe MLS API provides listings data with different search criteria such as, city, state, postal code, agent, and sub-division. In addition, it provides active and sold listings.\n## Use this API to\n\n- get listing data.\n- get active and sold listings.\n- search listings with different filters.\n## How the MLS API Works\n\n- Provides listing data.\n- Rich search criteria.\n- Real-time data from different source systems.  \n## Generic Information\n- A response is always sent for a request. Make sure that your application does not time-out.\n- If the API is triggered again, avoid use of short retry periods to keep out of rate limiting scenarios.\n\n## Prerequisites\nTo use this API in a production environment, you must have the following details:\n\n- API Key.\n- Okta credentials.\n- Okta scope - https://dataservices.eap.com/eaplistingsapi.\n\n\n## How to Register and Create an Account\nTo use the MLS API, do the steps as follows: \n\n  1. Go to [Anywhere Developer Portal](https://developers.anywhere.re) and\n[Login](https://developers.anywhere.re/user/me).\n2. See the API product features and requirements.\n3. Use Get Access and get the API credentials.\n4. Refer to [How it Works](https://developers.anywhere.re/docs/how-it-works) for more details.\n## Sandbox Access\n\n For Sandbox access, visit the Sandbox Portal URL \u003ca href=\"https://developers.anywhere.re/add-app\" target=\"_blank\"\u003eGet Sandbox product access\u003c/a\u003e.\n \n## Production Access\n\n  For Production access, visit the Production Portal URL \u003ca href=\"https://developers.anywhere.re/add-app\" target=\"_blank\"\u003eGet Production product access\u003c/a\u003e.\n",
+    "version": "1.0",
+    "x-anonymous": "FALSE",
+    "x-hous-product-name": "MLS Data Service",
+    "x-hous-product-version": "1.0",
+    "x-hous-version": "v1.0"
+  },
+  "tags": [
+    {
+      "name": "MlsDisplayRulesService"
+    }
+  ],
+  "host": "api.anywhere.re",
+  "basePath": "/v1.0/mls-display-rules",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/internal/health": {
+      "get": {
+        "summary": "Health Check MLS Display Rules API.",
+        "operationId": "MlsDisplayRulesService_HealthCheck",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1HealthReply"
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_400"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_401"
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_404"
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_429"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_500"
+            }
+          },
+          "502": {
+            "description": "Bad Gateway",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_502"
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_503"
+            }
+          },
+          "504": {
+            "description": "Gateway Timeout",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_504"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "MlsDisplayRulesService"
+        ]
+      }
+    },
+    "/mls/displayrules": {
+      "get": {
+        "summary": "Get MLS display rules",
+        "description": "Get all the MLS display rules for active MLS. Pagination is supported through offset and limit parameters.",
+        "operationId": "MlsDisplayRulesService_GetMlsDisplayRules",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/components/schemas/v1GetMlsDisplayRulesByResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_400"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_401"
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_404"
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_429"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_500"
+            }
+          },
+          "502": {
+            "description": "Bad Gateway",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_502"
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_503"
+            }
+          },
+          "504": {
+            "description": "Gateway Timeout",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_504"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "MlsDisplayRulesService"
+        ],
+        "security": [
+          {
+            "AccessToken": [],
+            "ApiKey": []
+          }
+        ]
+      },
+      "post": {
+        "operationId": "MlsDisplayRulesService_UpdateMlsDisplayRulesStatus",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateMlsDisplayRulesStatusResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_400"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_401"
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_404"
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_429"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_500"
+            }
+          },
+          "502": {
+            "description": "Bad Gateway",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_502"
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_503"
+            }
+          },
+          "504": {
+            "description": "Gateway Timeout",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_504"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "mlsDisplayRulesStatus",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1MlsDisplayRulesStatus"
+            }
+          }
+        ],
+        "tags": [
+          "MlsDisplayRulesService"
+        ]
+      }
+    },
+    "/mls/displayrules/source/{sourceSystemKey}": {
+      "get": {
+        "summary": "Get Mls Display Rules",
+        "description": "This method gets MLS Display Rules for a given MLS source.",
+        "operationId": "MlsDisplayRulesService_GetMlsDisplayRulesBySource",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/components/schemasv1GetMlsDisplayRulesBySourceResponse/"
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_400"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_401"
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_404"
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_429"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_500"
+            }
+          },
+          "502": {
+            "description": "Bad Gateway",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_502"
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_503"
+            }
+          },
+          "504": {
+            "description": "Gateway Timeout",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_504"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "sourceSystemKey",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "MlsDisplayRulesService"
+        ],
+        "security": [
+          {
+            "AccessToken": [],
+            "ApiKey": []
+          }
+        ]
+      }
+    },
+    "/mls/internal/displayrules": {
+      "get": {
+        "summary": "Get MLS Display Rules",
+        "operationId": "MlsDisplayRulesService_GetMlsDisplayRulesIgnoreStatus",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetMlsDisplayRulesByResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_400"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_401"
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_404"
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_429"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_500"
+            }
+          },
+          "502": {
+            "description": "Bad Gateway",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_502"
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_503"
+            }
+          },
+          "504": {
+            "description": "Gateway Timeout",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_504"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "MlsDisplayRulesService"
+        ]
+      }
+    },
+    "/mls/internal/displayrules/data": {
+      "post": {
+        "summary": "Update MLS Display Rules for given source",
+        "operationId": "MlsDisplayRulesService_UpdateMlsDisplayRulesData",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UpdateMlsDisplayRulesDataResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_400"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_401"
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_404"
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_429"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_500"
+            }
+          },
+          "502": {
+            "description": "Bad Gateway",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_502"
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_503"
+            }
+          },
+          "504": {
+            "description": "Gateway Timeout",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_504"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "mlsDisplayRulesData",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1MlsDisplayRulesUpdateData"
+            }
+          }
+        ],
+        "tags": [
+          "MlsDisplayRulesService"
+        ]
+      }
+    },
+    "/mls/internal/displayrules/source/{sourceSystemKey}": {
+      "get": {
+        "summary": "Get Mls Display Rules for a given mls source, ignoring active or inactive status.",
+        "operationId": "MlsDisplayRulesService_GetMlsDisplayRulesBySourceIgnoreStatus",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetMlsDisplayRulesBySourceResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_400"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_401"
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_404"
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_429"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_500"
+            }
+          },
+          "502": {
+            "description": "Bad Gateway",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_502"
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_503"
+            }
+          },
+          "504": {
+            "description": "Gateway Timeout",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_504"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "sourceSystemKey",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "MlsDisplayRulesService"
+        ]
+      }
+    },
+    "/mls/stream/displayrules": {
+      "get": {
+        "summary": "Stream mls display rules",
+        "operationId": "MlsDisplayRulesService_StreamMlsDisplayRules",
+        "responses": {
+          "200": {
+            "description": "A successful response.(streaming responses)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "$ref": "#/definitions/v1MlsDisplayRules"
+                },
+                "error": {
+                  "$ref": "#/definitions/rpcStatus"
+                }
+              },
+              "title": "Stream result of v1MlsDisplayRules"
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_400"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_401"
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_404"
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_429"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_500"
+            }
+          },
+          "502": {
+            "description": "Bad Gateway",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_502"
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_503"
+            }
+          },
+          "504": {
+            "description": "Gateway Timeout",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_504"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "MlsDisplayRulesService"
+        ]
+      }
+    },
+    "/mls/stream/displayrules/event": {
+      "get": {
+        "summary": "Stream mls display rules events.",
+        "operationId": "MlsDisplayRulesService_StreamMlsDisplayRulesEvent",
+        "responses": {
+          "200": {
+            "description": "A successful response.(streaming responses)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "$ref": "#/definitions/v1StreamMlsDisplayRulesEventResponse"
+                },
+                "error": {
+                  "$ref": "#/definitions/rpcStatus"
+                }
+              },
+              "title": "Stream result of v1StreamMlsDisplayRulesEventResponse"
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_400"
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_401"
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_404"
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_429"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_500"
+            }
+          },
+          "502": {
+            "description": "Bad Gateway",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_502"
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_503"
+            }
+          },
+          "504": {
+            "description": "Gateway Timeout",
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse_504"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "sourceSystemKey",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "eventType",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "resumeEventId",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "MlsDisplayRulesService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1DisplayRule": {
+      "type": "string",
+      "enum": [
+        "MustDisplay",
+        "MustNotDisplay",
+        "NoRestrictions"
+      ],
+      "default": "MustDisplay"
+    },
+    "v1EventMetaData": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string"
+        }
+      },
+      "description": "Meta data for streaming events."
+    },
+    "v1GetMlsDisplayRulesByResponse": {
+      "type": "object",
+      "properties": {
+        "mlsDisplayRules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1MlsDisplayRules"
+          }
+        }
+      },
+      "description": "Response message for mls display rules."
+    },
+    "v1GetMlsDisplayRulesBySourceResponse": {
+      "type": "object",
+      "properties": {
+        "mlsDisplayRules": {
+          "$ref": "#/definitions/v1MlsDisplayRules"
+        }
+      },
+      "description": "Response message for mls display rules by mls source."
+    },
+    "v1HealthReply": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        }
+      },
+      "description": "Response message type for health check."
+    },
+    "v1MlsDisplayRules": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string",
+          "description": "Internal MLS source name that's used in MDP (MLS Data Platform)."
+        },
+        "copyrightLogo": {
+          "type": "string",
+          "description": "URL to the copyright logo provided by the MLS that is supposed to be used on an IDX website."
+        },
+        "disclaimer": {
+          "type": "string",
+          "description": "A Standard Disclaimer format with some placeholder to insert appropriate company info."
+        },
+        "hideComments": {
+          "type": "boolean",
+          "description": "Flag that specifies if the MLS wants public comments to not be shown on an IDX website. Hide if \"true\". Default is \"false\"."
+        },
+        "hideLastCheckedForUpdates": {
+          "type": "boolean",
+          "description": "Flag that specifies if the last timestamp of updates for a given MLS should be displayed or not. Hide if \"true\". Default is \"false\"."
+        },
+        "hideLikeButton": {
+          "type": "boolean",
+          "description": "Flag that specifies if the like button should be shown or not. Hide if \"true\". Default is \"false\"."
+        },
+        "hideListingDate": {
+          "type": "boolean",
+          "description": "Flag that specifies if the listing date should be shown or not. Hide if \"true\". Default is \"false\"."
+        },
+        "hideMortgageCalculations": {
+          "type": "boolean",
+          "description": "Flag that specifies if Mortgage Calculations section should be shown or not. Hide if \"true\". Default is \"false\"."
+        },
+        "hidePopularity": {
+          "type": "boolean",
+          "description": "Flag that specifies if the popularity index should be shown or not. Hide if \"true\". Default is \"false\"."
+        },
+        "hidePriceHistory": {
+          "type": "boolean",
+          "description": "Flag that specifies if the listing price history should be shown or not. Hide if \"true\". Default is \"false\"."
+        },
+        "hidePropertyInsights": {
+          "type": "boolean",
+          "description": "Flag that specifies if the property insights should be shown or not. Hide if \"true\". Default is \"false\"."
+        },
+        "hideSchoolDistrict": {
+          "type": "boolean",
+          "description": "Flag that specifies if the school district information should be shown or not. Hide if \"true\". Default is \"false\"."
+        },
+        "hideViews": {
+          "type": "boolean",
+          "description": "Flag that specifies if the number of views of a listings on the website should be shown or not. Hide if \"true\". Default is \"false\"."
+        },
+        "hideWalkScore": {
+          "type": "boolean",
+          "description": "Flag that specifies if the walk score should be shown or not. Hide if \"true\". Default is \"false\"."
+        },
+        "hideYearBuilt": {
+          "type": "boolean",
+          "description": "Flag that specifies if the year built should be shown or not. Hide if \"true\". Default is \"false\"."
+        },
+        "honorMlsDataRectangle": {
+          "type": "boolean"
+        },
+        "hpaCode": {
+          "type": "string",
+          "title": "House Price Appreciation Code"
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Flag that shows if an MLS is currently active or not. Active if \"true\"."
+        },
+        "listingOfficeSize": {
+          "type": "string",
+          "title": "Font size to use for Listing office description. e.g. \"font-18\" for SC_HHMLS, \"font-14\" for NH_NNEREN, WI_WIREX, FIRSTMLS"
+        },
+        "logo": {
+          "type": "string",
+          "description": "URL to the logo of the MLS that can either be downloaded or referenced."
+        },
+        "logoDisplayHeight": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Display height of the logo on a website."
+        },
+        "logoHeight": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Actual height of the logo available."
+        },
+        "logoWidth": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Actual width of the logo available."
+        },
+        "longName": {
+          "type": "string",
+          "description": "Long description name of the MLS."
+        },
+        "publicWebsiteUrl": {
+          "type": "string",
+          "description": "This is the MLS public Website URL if available."
+        },
+        "shortName": {
+          "type": "string",
+          "description": "Short name of the MLS. Can be used to display along with long name in drop down select boxes."
+        },
+        "showContingent": {
+          "type": "boolean",
+          "description": "Flag that specifies if contingent listings can be shown or not. Yes if \"true\". Default is \"false\"."
+        },
+        "showDataAttribution": {
+          "type": "boolean",
+          "description": "Flag that specifies if listing data attribution info can be shown or not. Yes if \"true\". Default is \"false\"."
+        },
+        "showDisclaimer": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Flag that specifies if a disclaimer has to be shown or not. Possible values are : NOT_SHOWN = 0, SHOW_PRELOGIN = 1, SHOW_POSTLOGIN = 2, SHOW_PRE_AND_POST_LOGIN = 3\nDefault is NOT_SHOWN = 0\nuse the following logic to display logo accordingly,\nreturn(disclaimer != null \u0026\u0026 (showDisclaimer == SHOW_PRE_AND_POSTLOGIN || (showDisclaimer ? showLogo == SHOW_POSTLOGIN : showDisclaimer == SHOW_PRELOGIN)));"
+        },
+        "showListingAgent": {
+          "type": "boolean",
+          "description": "Flag that specifies if listing agent for the listing can be shown or not. Yes if \"true\". Default is \"false\"."
+        },
+        "showLogo": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Flag that specifies if a logo has to be shown or not. Possible values are : NOT_SHOWN = 0, SHOW_PRELOGIN = 1, SHOW_POSTLOGIN = 2, SHOW_PRE_AND_POST_LOGIN = 3\nDefault is NOT_SHOWN = 0\nuse the following logic to display logo accordingly,\nreturn(logo != null \u0026\u0026 (showLogo == SHOW_PRE_AND_POSTLOGIN || (postlog ? showLogo == SHOW_POSTLOGIN : showLogo == SHOW_PRELOGIN)));"
+        },
+        "showMlsNumber": {
+          "type": "boolean",
+          "description": "Flag that specifies if logo of the MLS can be shown or not in a listing display. Yes if \"true\". Default is \"false\"."
+        },
+        "showNewConstructionCert": {
+          "type": "boolean",
+          "description": "Flag that specifies if new construction certificate of a listing can be shown or not. Yes if \"true\". Default is \"false\"."
+        },
+        "showOfficePhoneDetail": {
+          "type": "boolean",
+          "description": "Flag that specifies if the listing office phone can be shown or not. Yes if \"true\". Default is \"false\"."
+        },
+        "showOfficePhoneOnHd": {
+          "type": "boolean",
+          "description": "Flag that specifies if the Listing Office Phone can be shown or not on the details page. Yes if \"true\". Default is \"false\"."
+        },
+        "showOfficePhoneOnResults": {
+          "type": "boolean",
+          "description": "Flag that specifies if listing office phone can be shown or not on the search results page. Yes if \"true\". Default is \"false\"."
+        },
+        "showOfficePhoneResults": {
+          "type": "boolean",
+          "description": "Default is \"false\"."
+        },
+        "showOfficeUnderPhoto": {
+          "type": "boolean",
+          "description": "Flag that specifies if listing office phone can be shown or not under the agent/property photo. Yes if \"true\". Default is \"false\"."
+        },
+        "useTractNames": {
+          "type": "boolean",
+          "description": "Flag that specifies if tract names for a listing can be shown or not. Yes if \"true\". Default is \"false\"."
+        },
+        "agentTileAttributionRule": {
+          "$ref": "#/definitions/v1DisplayRule",
+          "description": "Flag that specifies if the agent tile should be shown or not. Possible values 0 -\u003e MustDisplay, 1 -\u003e MustNotDisplay and 2 -\u003e NoRestrictions. Default is 0."
+        },
+        "agentPhoneAttributionRule": {
+          "$ref": "#/definitions/v1DisplayRule",
+          "description": "Flag that specifies if the agent phone attribution should be shown or not. Possible values 0 -\u003e MustDisplay, 1 -\u003e MustNotDisplay and 2 -\u003e NoRestrictions. Default is 0."
+        },
+        "buyerAgentCommDisplayRule": {
+          "$ref": "#/definitions/v1DisplayRule",
+          "description": "Flag that specifies if the buyer agent commission should be shown or not. Possible values 0 -\u003e MustDisplay, 1 -\u003e MustNotDisplay and 2 -\u003e NoRestrictions. Default is 0."
+        },
+        "rdmSourceSystemKey": {
+          "type": "string",
+          "description": "The standardized source system name (rdm - Referential Data Management) that should be prefixed with state code followed by underscore and the existing source name. Ex: ML (Colorado) should be CO_ML."
+        }
+      },
+      "description": "MLS Display Rules Data."
+    },
+    "v1MlsDisplayRulesStatus": {
+      "type": "object",
+      "properties": {
+        "sourceSystemKey": {
+          "type": "string"
+        },
+        "isActive": {
+          "type": "boolean"
+        }
+      },
+      "description": "Response message for mls display rules status update by mls source."
+    },
+    "v1MlsDisplayRulesUpdateData": {
+      "type": "object",
+      "properties": {
+        "sourceSystemKey": {
+          "type": "string",
+          "description": "TODO: Add description for the fields."
+        },
+        "disclaimer": {
+          "type": "string"
+        },
+        "longName": {
+          "type": "string"
+        }
+      },
+      "description": "MLS Display Rules Data."
+    },
+    "v1StreamMlsDisplayRulesEventResponse": {
+      "type": "object",
+      "properties": {
+        "eventMetaData": {
+          "$ref": "#/definitions/v1EventMetaData"
+        },
+        "eventType": {
+          "type": "string"
+        },
+        "mlsDisplayRules": {
+          "$ref": "#/definitions/v1MlsDisplayRules"
+        }
+      },
+      "description": "The response message for streaming mls display rules events."
+    },
+    "v1UpdateMlsDisplayRulesDataResponse": {
+      "type": "object",
+      "properties": {
+        "mlsDisplayRules": {
+          "$ref": "#/definitions/v1MlsDisplayRules"
+        }
+      },
+      "description": "Response message for mls display rules status update by mls source."
+    },
+    "v1UpdateMlsDisplayRulesStatusResponse": {
+      "type": "object",
+      "properties": {
+        "mlsDisplayRules": {
+          "$ref": "#/definitions/v1MlsDisplayRules"
+        }
+      },
+      "description": "Response message for mls display rules status update by mls source."
+    }
+  },
+  "securityDefinitions": {
+    "AccessToken": {
+      "type": "apiKey",
+      "name": "X-ACCESS-TOKEN",
+      "in": "header"
+    },
+    "ApiKey": {
+      "type": "apiKey",
+      "name": "X-API-KEY",
+      "in": "header"
+    }
+  },
+  "security": [
+    {
+      "AccessToken": [],
+      "ApiKey": []
+    }
+  ]
+}

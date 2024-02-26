@@ -1,0 +1,145 @@
+version: "2.1"
+
+services:
+
+  localstack:
+    build: localstack
+    hostname: localstack
+    container_name: localstack
+    ports:
+      - "4566:4566"
+      - "4583:4583"
+    environment:
+      - SERVICES=ssm
+      - DEFAULT_REGION=us-west-2
+      - DEBUG=${DEBUG- }
+      - DATA_DIR=${DATA_DIR- }
+      - PORT_WEB_UI=${PORT_WEB_UI- }
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - ./localstack/resources:/docker-entrypoint-initaws.d
+
+  mongo:
+    build: test/mongo
+    hostname: mongo
+    container_name: mongo
+    expose:
+      - 27017
+    ports:
+      - 27017:27017
+    restart: always
+    environment:
+      - MONGODB_ADVERTISED_HOSTNAME=mongo
+      - MONGODB_REPLICA_SET_MODE=primary
+      - MONGODB_ROOT_PASSWORD=example
+      - MONGODB_REPLICA_SET_KEY=replicaset1
+    volumes:
+      - './mongodb_test_data:/bitnami'
+
+  mongodb-secondary:
+    build: test/mongo
+    hostname: mongodb-secondary
+    container_name: mongodb-secondary
+    ports:
+      - 27018:27017
+    expose:
+      - 27017
+    depends_on:
+      - mongo
+    restart: always
+    environment:
+      - MONGODB_ADVERTISED_HOSTNAME=mongodb-secondary
+      - MONGODB_REPLICA_SET_MODE=secondary
+      - MONGODB_PRIMARY_HOST=mongo
+      - MONGODB_PRIMARY_ROOT_PASSWORD=example
+      - MONGODB_REPLICA_SET_KEY=replicaset1
+
+  mongodb-arbiter:
+    build: test/mongo
+    hostname: mongodb-arbiter
+    container_name: mongodb-arbiter
+    expose:
+      - 27017
+    ports:
+      - 27019:27017
+    depends_on:
+      - mongo
+    restart: always
+    environment:
+      - MONGODB_ADVERTISED_HOSTNAME=mongodb-arbiter
+      - MONGODB_REPLICA_SET_MODE=arbiter
+      - MONGODB_PRIMARY_HOST=mongo
+      - MONGODB_PRIMARY_ROOT_PASSWORD=example
+      - MONGODB_REPLICA_SET_KEY=replicaset1
+
+  mongo-init:
+    build: test/data/document
+    links:
+      - mongo
+      - mongodb-secondary
+      - mongodb-arbiter
+    depends_on:
+      mongo:
+        condition: service_healthy
+      mongodb-secondary:
+        condition: service_healthy
+      mongodb-arbiter:
+        condition: service_healthy
+    command: >
+      /bin/bash -c "
+        sleep 30 && echo 'slept for 30 secs'
+        mongoimport --host "mongo:27017" -u root -p example --authenticationDatabase admin -d mls -c listings --mode upsert --type json --file /document/listings.txt
+      "
+
+  mls:
+    build: ./
+    hostname: mls
+    container_name: mls
+    links:
+      - localstack
+      - mongo
+    ports:
+      - "9080:9080"
+      - "9081:9081"
+    environment:
+      GO_MLS_MONGODB_PREFIX: mongodb
+      GO_MLS_MONGODB_URL: "mongo:27017"
+      GO_MLS_MONGODB_USER: root
+      GO_MLS_MONGODB_PASS: example
+      GO_MLS_MONGODB_NAME: mls
+      GO_MLS_MONGODB_COLLECTIONS_LISTINGS: listings
+      GO_MLS_MONGODB_OPTIONS: "authSource=admin,replicaSet=replicaset1"
+      GO_MLS_API_PAGINATION_LIMIT_DEFAULT: 1
+      GO_MLS_API_PAGINATION_LIMIT_MAX: 2
+      GO_MLS_GRPC_PORT: 9080
+      GO_MLS_GATEWAY_PORT: 9081
+      GO_MLS_AWS_LOCAL_ACTIVE: "true"
+      GO_MLS_AWS_LOCAL_ENDPOINT_SSM: "http://localstack:4566"
+      GO_MLS_AWS_SSM_BASEPATH: "/realogy/services/mls-listings-service/local/"
+      GO_MLS_LOG_FORMATTER: text
+      AWS_ACCESS_KEY_ID: foo
+      AWS_SECRET_ACCESS_KEY: bar
+      AWS_DEFAULT_REGION: us-west-2
+    depends_on:
+      localstack:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+      mongodb-secondary:
+        condition: service_healthy
+      mongodb-arbiter:
+        condition: service_healthy
+      mongo-init:
+        condition: service_started
+
+  start_dependencies:
+    image: busybox
+    depends_on:
+      mls:
+        condition: service_started
+    command:
+      "echo Mls Listings Service Test Environment is Ready"
+
+volumes:
+  mongodb_test_data:
+    driver: local

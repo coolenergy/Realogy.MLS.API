@@ -1,0 +1,13 @@
+#!/bin/bash
+set -eo pipefail
+
+host="$(hostname --ip-address || echo '127.0.0.1')"
+echo "Mongodb test container ip address is $host"
+for attempt in 1 2 3
+do
+  echo "Checking for mongodb health $attempt"
+  if mongo --quiet "$host/test" --eval 'db.runCommand({ ping: 1 }).ok == 1'; then
+    exit 0
+  fi
+  sleep 20
+done

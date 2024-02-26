@@ -1,0 +1,44 @@
+image: golang:1.18
+
+options:
+  docker: true
+
+clone:
+  depth: full    # SonarCloud scanner needs the full history to assign issues properly
+
+definitions:
+  steps:
+    - step: &build-test
+        name: Build & Test (Unit/Integration)
+        script:
+          - curl -L https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64 -o /usr/local/bin/docker-compose
+          - chmod +x /usr/local/bin/docker-compose
+          - docker-compose events > docker-compose.events &  # needed for debugging bitbucket pipeline issues.
+          - "make"
+
+pipelines:
+  pull-requests:
+    '{dev,qa,uat,master}':
+      - step: *build-test
+  default:
+    - step: *build-test
+  branches:
+    '{dev,qa,uat,master}':
+      - step: *build-test
+      - step:
+          name: Build & Deploy Docker Image
+          script:
+            - build/webhook-start.sh
+            - build/setup-pipeline.sh
+            - build/artifact-package.sh
+            - build/docker-build.sh
+            - build/docker-push.sh
+            - build/artifact-publish.sh
+            - build/build-monitor.sh
+          after-script:
+            - build/webhook-end.sh
+      - step:
+          name: Sonar-scan
+          script:
+            - pipe: sonarsource/sonarcloud-scan:1.2.0
+            - pipe: sonarsource/sonarcloud-quality-gate:0.1.4

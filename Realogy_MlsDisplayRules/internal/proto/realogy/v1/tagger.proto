@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package realogy.api.mls.displayrules.v1;
+
+import "google/protobuf/descriptor.proto";
+
+option go_package = "realogy.com/api/mls/displayrules/v1";
+option java_package = "com.realogy.mls.displayrules.v1";
+option java_multiple_files = true;
+
+// Tags are applied at the field level
+extend google.protobuf.FieldOptions {
+    // Multiple Tags can be spcified.
+    string tags = 847939;
+}
+
+extend google.protobuf.OneofOptions {
+    // Multiple Tags can be spcified.
+    string oneof_tags = 847939;
+}

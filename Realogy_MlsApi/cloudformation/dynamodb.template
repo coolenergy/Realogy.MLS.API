@@ -1,0 +1,20 @@
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  RealogyResourcePrefix:
+    Type: "String"
+    Description: "All AWS resources should be prefixed with this"
+
+Resources:
+  Table:
+    Type: 'AWS::DynamoDB::Table'
+    Description: "Example table"
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: "id"
+          AttributeType: "S"
+      BillingMode: 'PAY_PER_REQUEST'
+      KeySchema:
+        - AttributeName: "id"
+          KeyType: "HASH"
+      TableName: !Sub "${RealogyResourcePrefix}example"
+

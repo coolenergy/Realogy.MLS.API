@@ -1,0 +1,14 @@
+image: atlassian/default-image:2
+
+options:
+  docker: true
+
+pipelines:
+  default:  # Pipelines that run automatically on a commit to a branch
+    - step:
+        name: build app
+        script:
+          - build/artifact-package.sh
+          - build/artifact-publish.sh
+          - build/build-monitor.sh
+

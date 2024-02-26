@@ -1,0 +1,728 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "MLS-Display-Rules",
+    "description": "**Note:** *Realogy hosts are deprecated (https://\\**.api.realogy.com). We recommend the use of Anywhere API hosts (https://\\*.api.anywhere.re).\n\n\n**New Consumers** *- Use https://\\*.api.anywhere.re*\n\n\n**Existing Consumers** *- https://\\**.api.realogy.com *will continue to work as-is, but plan to use https://\\*.api.anywhere.re host*.\n\n## Overview\n\nProvides MLS Display Rules (IDX) for the MLS Sources supported by MLS/MDP Platform. Provides APIs for MLS Sources supported and currently active in MLS/MDP Platform.\n\n## Use this API to\n- get MLS Display Rules for All Active MLS sources. \n- get MLS Display Rules for All Active and InActive MLS sources. \n- get MLS Display Rules for a given MLS source.\n\n## How the MLS Display Rules API Works\n- An Active MLS Source from MLS Display Rules API indicates that the Listings data is available for that MLS via Listings API.\n- An Inactive MLS Source returned from MLS Display Rules API indicates that the Listings data is ***not*** available for that MLS via Listings API.\n- Provides various IDX Rules for an MLS Source that can be used to determine how Listings API data can be used in websites  \n  \n## Generic Information\n- A response is always sent for a request. Make sure that your application does not time-out.\n- If the API is triggered again, then avoid use of short retry periods to keep out of rate limiting scenarios.\n\n## Prerequisites\nTo use this API in a production environment, you must have the following:\n\n- API Key.\n- Okta credentials.\n- Okta scope - https://dataservices.eap.com/eaplistingsapi.\n\n## How to Register and Create an Account\nTo use the MLS Display Rules API, do the steps as follows: \n\n  1. Go to [Anywhere Developer Portal](https://developers.anywhere.re) and\n[Login](https://developers.anywhere.re/user/me).\n2. See the API product features and requirements.\n3. Use Get Access and get the API credentials.\n4. Refer to [How it Works](https://developers.anywhere.re/docs/how-it-works) for more details.\n## Sandbox Access\n\n For Sandbox access, visit the Sandbox Portal URL <a href=\"https://developers.anywhere.re/add-app\" target=\"_blank\">Get Sandbox product access</a>.\n \n## Production Access\n\n  For Production access, visit the Production Portal URL <a href=\"https://developers.anywhere.re/add-app\" target=\"_blank\">Get Production product access</a>.\n  \n",
+    "version": "1.0",
+    "x-hous-product-name": "MLS Data Service",
+    "x-hous-product-version": "1.0",
+    "x-hous-version": "v1.0",
+    "x-anonymous": "FALSE"
+  },
+  "servers": [
+    {
+      "url": "https://api.anywhere.re/v1.0/mls-display-rules",
+      "description": "Production"
+    },
+    {
+      "url": "https://preprod1.api.anywhere.re/v1.0/mls-display-rules",
+      "description": "Sandbox"
+    }
+  ],
+  "paths": {
+    "/mls/displayrules": {
+      "get": {
+        "tags": [
+          "MlsDisplayRulesService"
+        ],
+        "summary": "Get MLS display rules",
+        "description": "Get all the MLS display rules for active MLS. Pagination is supported through offset and limit parameters.",
+        "operationId": "GetMlsDisplayRules",
+        "parameters": [
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "pattern": "^[0-9]+$",
+              "type": "integer",
+              "format": "int32",
+              "example": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "pattern": "^[0-9]+$",
+              "type": "integer",
+              "format": "int32",
+              "example": 1000
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/v1GetMlsDisplayRulesByResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse_400"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse_401"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse_404"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse_429"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse_500"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse_502"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse_503"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Gateway Timeout",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse_504"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AccessToken": [],
+            "ApiKey": []
+          }
+        ]
+      }
+    },
+    "/mls/displayrules/source/{source_system_key}": {
+      "get": {
+        "tags": [
+          "MlsDisplayRulesService"
+        ],
+        "summary": "Get MLS Display Rules",
+        "description": "This method gets MLS Display Rules for a given MLS source.",
+        "operationId": "GetMlsDisplayRulesBySource",
+        "parameters": [
+          {
+            "name": "source_system_key",
+            "in": "path",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "pattern": "^[0-9a-zA-Z_]+$",
+              "type": "string",
+              "example": "OH_WRIST"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/v1GetMlsDisplayRulesBySourceResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse_400"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse_401"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse_404"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too Many Requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse_429"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse_500"
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Bad Gateway",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse_502"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service Unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse_503"
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "Gateway Timeout",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse_504"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AccessToken": [],
+            "ApiKey": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "protobufAny": {
+        "type": "object",
+        "properties": {
+          "typeUrl": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string",
+            "format": "byte"
+          }
+        }
+      },
+      "runtimeStreamError": {
+        "type": "object",
+        "properties": {
+          "grpcCode": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "httpCode": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "httpStatus": {
+            "type": "string"
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/protobufAny"
+            }
+          }
+        }
+      },
+      "v1EventMetaData": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "string"
+          }
+        },
+        "description": "Meta data for streaming events."
+      },
+      "v1GetMlsDisplayRulesByResponse": {
+        "type": "object",
+        "properties": {
+          "mlsDisplayRules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/v1MlsDisplayRules"
+            }
+          }
+        },
+        "description": "Response message for mls display rules."
+      },
+      "v1GetMlsDisplayRulesBySourceResponse": {
+        "type": "object",
+        "properties": {
+          "mlsDisplayRules": {
+            "$ref": "#/components/schemas/v1MlsDisplayRules"
+          }
+        },
+        "description": "Response message for mls display rules by mls source."
+      },
+      "v1MlsDisplayRules": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "description": "TODO: Add description for the fields."
+          },
+          "copyrightLogo": {
+            "type": "string"
+          },
+          "disclaimer": {
+            "type": "string"
+          },
+          "hideComments": {
+            "type": "boolean",
+            "format": "boolean"
+          },
+          "hideLastCheckedForUpdates": {
+            "type": "boolean",
+            "format": "boolean"
+          },
+          "hideLikeButton": {
+            "type": "boolean",
+            "format": "boolean"
+          },
+          "hideListingDate": {
+            "type": "boolean",
+            "format": "boolean"
+          },
+          "hideMortgageCalculations": {
+            "type": "boolean",
+            "format": "boolean"
+          },
+          "hidePopularity": {
+            "type": "boolean",
+            "format": "boolean"
+          },
+          "hidePriceHistory": {
+            "type": "boolean",
+            "format": "boolean"
+          },
+          "hidePropertyInsights": {
+            "type": "boolean",
+            "format": "boolean"
+          },
+          "hideSchoolDistrict": {
+            "type": "boolean",
+            "format": "boolean"
+          },
+          "hideViews": {
+            "type": "boolean",
+            "format": "boolean"
+          },
+          "hideWalkScore": {
+            "type": "boolean",
+            "format": "boolean"
+          },
+          "hideYearBuilt": {
+            "type": "boolean",
+            "format": "boolean"
+          },
+          "honorMlsDataRectangle": {
+            "type": "boolean",
+            "format": "boolean"
+          },
+          "hpaCode": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean",
+            "format": "boolean"
+          },
+          "listingOfficeSize": {
+            "type": "string"
+          },
+          "logo": {
+            "type": "string"
+          },
+          "logoDisplayHeight": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "logoHeight": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "logoWidth": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "longName": {
+            "type": "string"
+          },
+          "publicWebsiteUrl": {
+            "type": "string"
+          },
+          "shortName": {
+            "type": "string"
+          },
+          "showContingent": {
+            "type": "boolean",
+            "format": "boolean"
+          },
+          "showDataAttribution": {
+            "type": "boolean",
+            "format": "boolean"
+          },
+          "showDisclaimer": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "showListingAgent": {
+            "type": "boolean",
+            "format": "boolean"
+          },
+          "showLogo": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "showMlsNumber": {
+            "type": "boolean",
+            "format": "boolean"
+          },
+          "showNewConstructionCert": {
+            "type": "boolean",
+            "format": "boolean"
+          },
+          "showOfficePhoneDetail": {
+            "type": "boolean",
+            "format": "boolean"
+          },
+          "showOfficePhoneOnHd": {
+            "type": "boolean",
+            "format": "boolean"
+          },
+          "showOfficePhoneOnResults": {
+            "type": "boolean",
+            "format": "boolean"
+          },
+          "showOfficePhoneResults": {
+            "type": "boolean",
+            "format": "boolean"
+          },
+          "showOfficeUnderPhoto": {
+            "type": "boolean",
+            "format": "boolean"
+          },
+          "useTractNames": {
+            "type": "boolean",
+            "format": "boolean"
+          }
+        },
+        "description": "MLS Display Rules Data."
+      },
+      "v1MlsDisplayRulesStatus": {
+        "type": "object",
+        "properties": {
+          "sourceSystemKey": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean",
+            "format": "boolean"
+          }
+        },
+        "description": "Response message for mls display rules status update by mls source."
+      },
+      "v1StreamMlsDisplayRulesEventResponse": {
+        "type": "object",
+        "properties": {
+          "eventMetaData": {
+            "$ref": "#/components/schemas/v1EventMetaData"
+          },
+          "eventType": {
+            "type": "string"
+          },
+          "mlsDisplayRules": {
+            "$ref": "#/components/schemas/v1MlsDisplayRules"
+          }
+        },
+        "description": "The response message for streaming mls display rules events."
+      },
+      "v1UpdateMlsDisplayRulesStatusResponse": {
+        "type": "object",
+        "properties": {
+          "mlsDisplayRules": {
+            "$ref": "#/components/schemas/v1MlsDisplayRules"
+          }
+        },
+        "description": "Response message for mls display rules status update by mls source."
+      },
+      "ErrorResponse_400": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "pattern": "^[a-zA-Z0-9-._\\s]*$",
+            "type": "string",
+            "description": "Error Code",
+            "example": "400"
+          },
+          "message": {
+            "pattern": "^[a-zA-Z0-9-._\\s]*$",
+            "type": "string",
+            "description": "Contains Error details",
+            "example": "Mandatory input parameters are missing."
+          }
+        }
+      },
+      "ErrorResponse_401": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "pattern": "^[a-zA-Z0-9-._\\s]*$",
+            "type": "string",
+            "description": "Error Code",
+            "example": "401"
+          },
+          "message": {
+            "pattern": "^[a-zA-Z0-9-._\\s]*$",
+            "type": "string",
+            "description": "Contains Error details",
+            "example": "Authorization has been denied for this request."
+          }
+        }
+      },
+      "ErrorResponse_404": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "pattern": "^[a-zA-Z0-9-._\\s]*$",
+            "type": "string",
+            "description": "Error Code",
+            "example": "404"
+          },
+          "message": {
+            "pattern": "^[a-zA-Z0-9-._\\s]*$",
+            "type": "string",
+            "description": "Contains Error details",
+            "example": "Resource Not Found."
+          }
+        }
+      },
+      "ErrorResponse_429": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "pattern": "^[a-zA-Z0-9-._\\s]*$",
+            "type": "string",
+            "description": "Error Code",
+            "example": "429"
+          },
+          "message": {
+            "pattern": "^[a-zA-Z0-9-._\\s]*$",
+            "type": "string",
+            "description": "Contains Error details",
+            "example": "Rate limit violated."
+          }
+        }
+      },
+      "ErrorResponse_500": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "pattern": "^[a-zA-Z0-9-._\\s]*$",
+            "type": "string",
+            "description": "Error Code",
+            "example": "500"
+          },
+          "message": {
+            "pattern": "^[a-zA-Z0-9-._\\s]*$",
+            "type": "string",
+            "description": "Contains Error details",
+            "example": "Internal Server Error."
+          }
+        }
+      },
+      "ErrorResponse_502": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "pattern": "^[a-zA-Z0-9-._\\s]*$",
+            "type": "string",
+            "description": "Error Code",
+            "example": "502"
+          },
+          "message": {
+            "pattern": "^[a-zA-Z0-9-._\\s]*$",
+            "type": "string",
+            "description": "Contains Error details",
+            "example": "Bad Gateway."
+          }
+        }
+      },
+      "ErrorResponse_503": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "pattern": "^[a-zA-Z0-9-._\\s]*$",
+            "type": "string",
+            "description": "Error Code",
+            "example": "503"
+          },
+          "message": {
+            "pattern": "^[a-zA-Z0-9-._\\s]*$",
+            "type": "string",
+            "description": "Contains Error details",
+            "example": "The service is unavailable."
+          }
+        }
+      },
+      "ErrorResponse_504": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "pattern": "^[a-zA-Z0-9-._\\s]*$",
+            "type": "string",
+            "description": "Error Code",
+            "example": "504"
+          },
+          "message": {
+            "pattern": "^[a-zA-Z0-9-._\\s]*$",
+            "type": "string",
+            "description": "Contains Error details",
+            "example": "Request timed out."
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiKey": {
+        "type": "apiKey",
+        "description": "This parameter represents the API Key provided for the consumption of this resource. It is provided as the client_id when creating an associated App.",
+        "name": "apiKey",
+        "in": "header"
+      },
+      "AccessToken": {
+        "type": "http",
+        "description": "This parameter represents the Authorization token obtained from the OKTA Authorization server. It is the Bearer token provided to authorize the consumer application. Usage Authorization : Bearer token.",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "x-stream-definitions": {
+    "v1MlsDisplayRules": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/components/schemas/v1MlsDisplayRules"
+        },
+        "error": {
+          "$ref": "#/components/schemas/runtimeStreamError"
+        }
+      },
+      "title": "Stream result of v1MlsDisplayRules"
+    },
+    "v1StreamMlsDisplayRulesEventResponse": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/components/schemas/v1StreamMlsDisplayRulesEventResponse"
+        },
+        "error": {
+          "$ref": "#/components/schemas/runtimeStreamError"
+        }
+      },
+      "title": "Stream result of v1StreamMlsDisplayRulesEventResponse"
+    }
+  },
+  "x-tagGroups": [
+    {
+      "name": "MLS display rules Specification",
+      "tags": [
+        "MlsDisplayRulesService"
+      ]
+    }
+  ]
+}

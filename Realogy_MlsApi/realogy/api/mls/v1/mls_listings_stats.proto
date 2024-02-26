@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package realogy.api.mls.v1;
+
+option go_package = "realogy.com/api/mls/v1";
+option java_package = "com.realogy.api.mls.v1";
+option java_multiple_files = true;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "api/proto/v1/tagger.proto";
+import "google/protobuf/timestamp.proto";
+
+
+// Mls Listings Statistics API.
+service MlsListingsStatsService {
+
+    // Get Mls Listings Statistics for a given mls source.
+    rpc GetMlsListingsStatsBySource (GetMlsListingsStatsBySourceRequest) returns (GetMlsListingsStatsBySourceResponse) {
+        option (google.api.http) = {
+            get: "/mls/listings/stats/source/{source_system_key}"
+        };
+    }
+
+    // Get Mls Listings Statistics for a given listing agent guid.
+    rpc GetMlsListingsStatsByAgentGuid (GetMlsListingsStatsByAgentGuidRequest) returns (GetMlsListingsStatsByAgentGuidResponse) {
+        option (google.api.http) = {
+            get: "/mls/listings/stats/agent/guid/{listing_agent_guid}"
+        };
+    }
+
+    // Health Check Mls Listings Statistics API.
+    rpc HealthCheck (HealthRequest) returns (HealthReply) {
+        option (google.api.http).get = "/internal/health";
+    }
+}
+
+// Request message for Mls Listings Stats for listing agent guid.
+message GetMlsListingsStatsByAgentGuidRequest {
+    string listing_agent_guid = 1           [(tags) = "graphql:\"listingAgentGuid,optional\" bson:\"listing_agent_guid\""];
+}
+
+// Response message for Mls Listings Stats for listing agent guid.
+message GetMlsListingsStatsByAgentGuidResponse {
+    int64  total_listings = 1                [(tags) = "graphql:\"totalListings,optional\" bson:\"total_listings\""];
+}
+
+// Request message for Mls Listings Statistics by mls source.
+message GetMlsListingsStatsBySourceRequest {
+    string source_system_key = 1;
+}
+
+// Response message for Mls Listings Statistics.
+message GetMlsListingsStatsBySourceResponse {
+    MlsListingsStats mls_listings_stats = 1;
+}
+
+// Reserved message type for healthcheck.
+message HealthRequest {
+}
+
+// Response message type for health check.
+message HealthReply {
+    string status = 1;
+}
+
+// Total listings for each property type
+message ActiveListingsByPropertyType {
+    string property_type = 1                                                           [(tags) = "graphql:\"propertyType,optional\" json:\"propertyType\" bson:\"property_type\""];
+    int32 count = 2                                                                    [(tags) = "graphql:\"count,optional\" json:\"count\" bson:\"count\""];
+}
+
+// MLS Listings Statistics Data.
+message MlsListingsStats {
+    string source = 1                                                                   [(tags) = "graphql:\"source,optional\" json:\"source\" bson:\"source\""];
+    int32 total_active_listings = 2                                                     [(tags) = "graphql:\"totalActiveListings,optional\" json:\"totalActiveListings\" bson:\"total_active_listings\""];
+    repeated ActiveListingsByPropertyType active_listings_by_property_type = 3          [(tags) = "graphql:\"activeListingsByPropertyType,optional\" json:\"activeListingsByPropertyType\" bson:\"active_listings_by_property_type\""];
+    int32 active_listings_with_photos = 4                                               [(tags) = "graphql:\"activeListingsWithPhotos,optional\" json:\"activeListingsWithPhotos\" bson:\"active_listings_with_photos\""];
+    int32 active_listings_with_open_homes = 5                                           [(tags) = "graphql:\"activeListingsWithOpenHomes,optional\" json:\"activeListingsWithOpenHomes\" bson:\"active_listings_with_open_homes\""];
+    google.protobuf.Timestamp listings_last_update_time = 6                             [(tags) = "graphql:\"listingsLastUpdateTime,optional\" json:\"listingsLastUpdateTime\" bson:\"listings_last_update_time\""];
+    google.protobuf.Timestamp photos_last_update_time = 7                               [(tags) = "graphql:\"photosLastUpdateTime,optional\" json:\"photosLastUpdateTime\" bson:\"photos_last_update_time\""];
+    google.protobuf.Timestamp open_homes_last_update_time = 8                           [(tags) = "graphql:\"openHomesLastUpdateTime,optional\" json:\"openHomesLastUpdateTime\" bson:\"open_homes_last_update_time\""];
+}

@@ -1,0 +1,167 @@
+syntax = "proto3";
+
+package realogy.api.mls.v1;
+
+option go_package = "realogy.com/api/mls/v1";
+option java_package = "com.realogy.api.mls.v1";
+option java_multiple_files = true;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "realogy/api/mls/v1/tagger.proto";
+
+// Mls Display Rules API's.
+service MlsDisplayRulesService {
+
+    // Get all the mls display rules. Pagination is supported through offset and limit parameters.
+    rpc GetMlsDisplayRules (GetMlsDisplayRulesByRequest) returns (GetMlsDisplayRulesByResponse) {
+        option (google.api.http) = {
+            get: "/mls/displayrules"
+        };
+    }
+
+    // Get Mls Display Rules for a given mls source.
+    rpc GetMlsDisplayRulesBySource (GetMlsDisplayRulesBySourceRequest) returns (GetMlsDisplayRulesBySourceResponse) {
+        option (google.api.http) = {
+            get: "/mls/displayrules/source/{source_system_key}"
+        };
+    }
+
+    rpc UpdateMlsDisplayRulesStatus (UpdateMlsDisplayRulesStatusRequest) returns (UpdateMlsDisplayRulesStatusResponse) {
+        option (google.api.http) = {
+             post:"/mls/displayrules/"
+             body: "mlsDisplayRulesStatus"
+         };
+    }
+
+    // Stream mls display rules
+    rpc StreamMlsDisplayRules (google.protobuf.Empty) returns (stream MlsDisplayRules) {
+        option (google.api.http) = {
+            get: "/mls/stream/displayrules"
+        };
+    }
+
+    // Stream mls display rules events.
+    rpc StreamMlsDisplayRulesEvent (StreamMlsDisplayRulesEventRequest) returns (stream StreamMlsDisplayRulesEventResponse) {
+        option (google.api.http) = {
+            get: "/mls/stream/displayrules/event"
+        };
+    }
+
+    // Health Check MLS Display Rules API.
+    rpc HealthCheck (HealthRequest) returns (HealthReply) {
+        option (google.api.http).get = "/internal/health";
+    }
+}
+
+// Request message for mls display rules. Accepts offset and limit as optional parameters for pagination.
+message GetMlsDisplayRulesByRequest {
+    int32 offset = 1;
+    int32 limit = 2;
+}
+
+// Response message for mls display rules.
+message GetMlsDisplayRulesByResponse {
+    repeated MlsDisplayRules mls_display_rules = 1;
+}
+
+// Request message for mls display rules by mls source.
+message GetMlsDisplayRulesBySourceRequest {
+    string source_system_key = 1;
+}
+// The request message for streaming mls display rules events.
+message UpdateMlsDisplayRulesStatusRequest {
+    MlsDisplayRulesStatus mlsDisplayRulesStatus = 1 [(tags) = "graphql:\"mlsDisplayRulsStatus,optional\" bson:\"mls_display_rules_status\""];
+}
+
+// Response message for mls display rules status update by mls source.
+message MlsDisplayRulesStatus {
+    string source_system_key = 1    [(tags) = "graphql:\"sourceSystemKey,optional\" bson:\"source_system_key\""];
+    bool is_active = 2          [(tags) = "graphql:\"isActive,optional\" bson:\"is_active\""];
+}
+
+// Response message for mls display rules status update by mls source.
+message UpdateMlsDisplayRulesStatusResponse {
+    MlsDisplayRules mls_display_rules = 1;
+}
+
+// Response message for mls display rules by mls source.
+message GetMlsDisplayRulesBySourceResponse {
+    MlsDisplayRules mls_display_rules = 1;
+}
+
+message StreamMlsDisplayRulesRequest {
+
+}
+
+// The request message for streaming mls display rules events.
+message StreamMlsDisplayRulesEventRequest {
+    string source_system_key = 1    [(tags) = "graphql:\"sourceSystemKey,optional\" bson:\"source_system_key\""];
+    string event_type = 99          [(tags) = "graphql:\"eventType,optional\" bson:\"event_type\""];
+    string resume_event_id = 100    [(tags) = "graphql:\"eventType,optional\" bson:\"resume_event_id\""];
+}
+
+// The response message for streaming mls display rules events.
+message StreamMlsDisplayRulesEventResponse {
+    EventMetaData event_meta_data = 1       [(tags) = "graphql:\"id,optional\" json:\"id\" bson:\"_id\""];
+    string event_type = 2                   [(tags) = "graphql:\"eventType,optional\" json:\"eventType\" bson:\"operationType\""];
+    MlsDisplayRules mls_display_rules = 3   [(tags) = "graphql:\"mlsDisplayRules,optional\" json:\"mlsDisplayRules\" bson:\"fullDocument\""];
+}
+
+// Meta data for streaming events.
+message EventMetaData {
+    string data = 1                [(tags) = "graphql:\"id,optional\" bson:\"_data\""];
+}
+
+// Reserved message type for healthcheck.
+message HealthRequest {
+}
+
+// Response message type for health check.
+message HealthReply {
+    string status = 1;
+}
+
+// MLS Display Rules Data.
+message MlsDisplayRules {
+    // TODO: Add description for the fields.
+    string source = 1                                       [(tags) = "graphql:\"source,optional\" json:\"source\" bson:\"source\""];
+    string copyright_logo = 2                               [(tags) = "graphql:\"copyrightLogo,optional\" json:\"copyrightLogo\" bson:\"copyright_logo\""];
+    string disclaimer = 3                                   [(tags) = "graphql:\"disclaimer,optional\" json:\"disclaimer\" bson:\"disclaimer\""];
+    bool hide_comments = 5                                  [(tags) = "graphql:\"hideComments,optional\" json:\"hideComments\" bson:\"hide_comments\""];
+    bool hide_last_checked_for_updates = 7                  [(tags) = "graphql:\"hideLastCheckedForUpdates,optional\" json:\"hideLastCheckedForUpdates\" bson:\"hide_last_checked_for_updates\""];
+    bool hide_like_button = 8                               [(tags) = "graphql:\"hideLikeButton,optional\" json:\"hideLikeButton\" bson:\"hide_like_button\""];
+    bool hide_listing_date = 9                              [(tags) = "graphql:\"hideListingDate,optional\" json:\"hideListingDate\" bson:\"hide_listing_date\""];
+    bool hide_mortgage_calculations = 10                    [(tags) = "graphql:\"hideMortgageCalculations,optional\" json:\"hideMortgageCalculations\" bson:\"hide_mortgage_calculations\""];
+    bool hide_popularity = 11                               [(tags) = "graphql:\"hidePopularity,optional\" json:\"hidePopularity\" bson:\"hide_popularity\""];
+    bool hide_price_history = 12                            [(tags) = "graphql:\"hidePriceHistory,optional\" json:\"hidePriceHistory\" bson:\"hide_price_history\""];
+    bool hide_property_insights = 13                        [(tags) = "graphql:\"hidePropertyInsights,optional\" json:\"hidePropertyInsights\" bson:\"hide_property_insights\""];
+    bool hide_school_district = 14                          [(tags) = "graphql:\"hideSchoolDistrict,optional\" json:\"hideSchoolDistrict\" bson:\"hide_school_district\""];
+    bool hide_views = 15                                    [(tags) = "graphql:\"hideViews,optional\" json:\"hideViews\" bson:\"hide_views\""];
+    bool hide_walk_score = 16                               [(tags) = "graphql:\"hideWalkScore,optional\" json:\"hideWalkScore\" bson:\"hide_walk_score\""];
+    bool hide_year_built = 17                               [(tags) = "graphql:\"hideYearBuilt,optional\" json:\"hideYearBuilt\" bson:\"hide_year_built\""];
+    bool honor_mls_data_rectangle = 18                      [(tags) = "graphql:\"honorMlsDataRectangle,optional\" json:\"honorMlsDataRectangle\" bson:\"honor_mls_data_rectangle\""]; // TODO: Boolean ?
+    string hpa_code = 19                                    [(tags) = "graphql:\"hpaCode,optional\" json:\"hpaCode\" bson:\"hpa_code\""];
+    bool is_active = 21                                     [(tags) = "graphql:\"isActive,optional\" json:\"isActive\" bson:\"is_active\""];
+    string listing_office_size = 37                         [(tags) = "graphql:\"listingOfficeSize,optional\" json:\"listingOfficeSize\" bson:\"listing_office_size\""];
+    string logo = 39                                        [(tags) = "graphql:\"logo,optional\" json:\"logo\" bson:\"logo\""];
+    int32 logo_display_height = 40                          [(tags) = "graphql:\"logoDisplayHeight,optional\" json:\"logoDisplayHeight\" bson:\"logo_display_height\""];
+    int32 logo_height = 41                                  [(tags) = "graphql:\"logoHeight,optional\" json:\"logoHeight\" bson:\"logo_height\""];
+    int32 logo_width = 42                                   [(tags) = "graphql:\"logoWidth,optional\" json:\"logoWidth\" bson:\"logo_width\""];
+    string long_name = 43                                   [(tags) = "graphql:\"longName,optional\" json:\"longName\" bson:\"long_name\""];
+    string public_website_url = 50                          [(tags) = "graphql:\"publicWebsiteUrl,optional\" json:\"publicWebsiteUrl\" bson:\"public_website_url\""];
+    string short_name = 52                                  [(tags) = "graphql:\"shortName,optional\" json:\"shortName\" bson:\"short_name\""];
+    bool show_contingent = 53                               [(tags) = "graphql:\"showContingent,optional\" json:\"showContingent\" bson:\"show_contingent\""];
+    bool show_data_attribution = 54                         [(tags) = "graphql:\"showDataAttribution,optional\" json:\"showDataAttribution\" bson:\"show_data_attribution\""];
+    int32 show_disclaimer = 56                               [(tags) = "graphql:\"showDisclaimer,optional\" json:\"showDisclaimer\" bson:\"show_disclaimer\""];
+    bool show_listing_agent = 58                            [(tags) = "graphql:\"showListingAgent,optional\" json:\"showListingAgent\" bson:\"show_listing_agent\""];
+    int32 show_logo = 59                                     [(tags) = "graphql:\"showLogo,optional\" json:\"showLogo\" bson:\"show_logo\""];
+    bool show_mls_number = 61                               [(tags) = "graphql:\"showMlsNumber,optional\" json:\"showMlsNumber\" bson:\"show_mls_number\""];
+    bool show_new_construction_cert = 62                    [(tags) = "graphql:\"showNewConstructionCert,optional\" json:\"showNewConstructionCert\" bson:\"show_new_construction_cert\""];
+    bool show_office_phone_detail = 63                      [(tags) = "graphql:\"showOfficePhoneDetail,optional\" json:\"showOfficePhoneDetail\" bson:\"show_office_phone_detail\""];
+    bool show_office_phone_on_hd = 64                       [(tags) = "graphql:\"showOfficePhoneOnHd,optional\" json:\"showOfficePhoneOnHd\" bson:\"show_office_phone_on_hd\""];
+    bool show_office_phone_on_results = 65                  [(tags) = "graphql:\"showOfficePhoneOnResults,optional\" json:\"showOfficePhoneOnResults\" bson:\"show_office_phone_on_results\""];
+    bool show_office_phone_results = 66                     [(tags) = "graphql:\"showOfficePhoneResults,optional\" json:\"showOfficePhoneResults\" bson:\"show_office_phone_results\""];
+    bool show_office_under_photo = 67                       [(tags) = "graphql:\"showOfficeUnderPhoto,optional\" json:\"showOfficeUnderPhoto\" bson:\"show_office_under_photo\""];
+    bool use_tract_names = 71                               [(tags) = "graphql:\"useTractNames,optional\" json:\"useTractNames\" bson:\"use_tract_names\""];
+}

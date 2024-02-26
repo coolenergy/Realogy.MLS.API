@@ -1,0 +1,83 @@
+networks:
+  integration-test:
+    driver: bridge
+
+services:
+
+  localstack:
+    build: localstack
+    hostname: localstack
+    container_name: localstack
+    ports:
+      - "4566:4566"
+      - "4583:4583"
+    environment:
+      - SERVICES=ssm
+      - DEFAULT_REGION=us-west-2
+      - DEBUG=${DEBUG- }
+      - DATA_DIR=${DATA_DIR- }
+      - PORT_WEB_UI=${PORT_WEB_UI- }
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - ./localstack/resources:/docker-entrypoint-initaws.d
+    networks:
+      - integration-test
+
+  mongo:
+    build: test/mongo
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    expose:
+      - "27017"
+    restart: on-failure
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    networks:
+      - integration-test
+
+  mongo-init:
+    build:
+      context: .
+      dockerfile: Dockerfile_db_init
+    networks:
+      - integration-test
+    depends_on:
+      mongo:
+        condition: service_healthy
+    command: >
+      /bin/bash -c "
+        sleep 30 && echo 'slept for 30 secs'
+        mongoimport --host mongo:27017 -u root -p example --authenticationDatabase admin -d mls -c display_rules --mode upsert --drop --file /test_data.json --jsonArray      
+      "
+
+  mls:
+    build: ./
+    hostname: mls
+    container_name: mls
+    ports:
+      - "8083:8083"
+      - "9981:9981"
+    environment:
+      MONGODB_URL: "mongo:27017"
+      AWS_LOCAL_ENDPOINT_SSM: "http://localstack:4566"
+      AWS_ACCESS_KEY_ID: foo
+      AWS_SECRET_ACCESS_KEY: bar
+      AWS_DEFAULT_REGION: us-west-2
+    depends_on:
+      localstack:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+      mongo-init:
+        condition: service_started
+    networks:
+      - integration-test
+
+  start_dependencies:
+    image: busybox
+    depends_on:
+      - mls
+    command:
+      "echo Mls DisplayRules Service is running"

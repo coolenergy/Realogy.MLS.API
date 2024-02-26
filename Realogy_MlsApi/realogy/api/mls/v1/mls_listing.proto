@@ -1,0 +1,1773 @@
+syntax = "proto3";
+
+package realogy.api.mls.v1;
+
+option go_package = "realogy.com/api/mls/v1";
+option java_package = "com.realogy.api.mls.v1";
+option java_multiple_files = true;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "realogy/api/mls/v1/tagger.proto";
+
+// MLS Listings Endpoints. RLD-2047
+service MlsListingService {
+
+    /* Get Listings for a given Listing Id. This API may return more than one listing for a listing id if the listing is associated to more than one mls source.
+        Use "source" in the request path to narrow the result to particular mls source.
+        ListingId's with hyphen(-) should be converted to underscore (_) internally by the pipeline. Lookup by listing id with hyphen is supported but the response should contain listing id with underscore.
+        For Ex: Both, /mls/listing/RX-10634525 and /mls/listing/RX_10634525 returns same listing. Listing id in the response is going to be "RX_10634525"
+        Additionally, Lookup by listing id with hyphen is supported and the response contain listing id with hyphen. */
+    rpc GetMlsListingByListingId (GetMlsListingByListingIdRequest) returns (GetMlsListingByListingIdResponse) {
+        option (google.api.http) = {
+            get: "/mls/listing/{listing_id}"
+            additional_bindings {
+                get: "/mls/listing/{listing_id}/source/{source_system_key}"
+            }
+        };
+    }
+
+    /* Update Listings for a given Listing Id. This API may update listing for a listing id if the listing is associated to more than one mls source.
+    Use "source" in the request path to narrow the result to particular mls source.*/
+    rpc UpdateMlsListingByListingId (UpdateMlsListingByListingIdRequest) returns (UpdateMlsListingByListingIdResponse) {
+        option (google.api.http) = {
+                put: "/mls/listing/{listing_id}/source/{source_system_key}"
+                body: "*"
+        };
+    }
+
+    /* POST endpoint to allow authorized clients to create a listing. This API creates listing for a listing id if the listing associated to rdmSourceSystemKey .*/
+    rpc AddMlsListings (MlsListingInput) returns (AddListingsResponse) {
+        option (google.api.http) = {
+                post: "/mls/rdm-source/{rdm_source_system_key}/listing/{listing_id}"
+                body: "*"
+        };
+    }
+
+    /* Get Listings for a given Listing Guid (Dash specific unique id for a listing). This API may return multiple listings for a listing id if there are multiple mls sources associated.
+        Use "source" in the request path to narrow the result to particular mls source. */
+    rpc GetMlsListingByListingGuid (GetMlsListingByListingGuidRequest) returns (GetMlsListingByListingGuidResponse) {
+        option (google.api.http) = {
+            get: "/mls/dash/listing/{listing_guid}"
+            additional_bindings {
+                get: "/mls/dash/listing/{listing_guid}/source/{source_system_key}"
+            }
+        };
+    }
+
+    /* Get Listings for a given mls source name. By default this api returns maximum of 20 listings. Use "offset & limit" in the request as query parameter to return more listings.
+        lastChangeTimestamp can be used to get listings delta changes. Timestamp has to be in UTC format. For ex: 2021-09-09T00:00:00.000Z. Endpoint ignores nano seconds in the timestamp. Deltas can be fetched upto last 30 days. 
+        Offset is the point at which the mls listings should be returned and limit is the size of the mls listings to be returned. Maximum limit is 250. Resets to max limit if the input is over the allowed max limit. */
+    rpc GetMlsListingBySource (GetMlsListingsBySourceRequest) returns (GetMlsListingsBySourceResponse) {
+        option (google.api.http) = {
+            get: "/mls/source/{source_system_key}"
+            additional_bindings {
+                get: "/mls/source/{source_system_key}/dash/agent/{listing_agent_guid}"
+            }
+        };
+    }
+
+    /* Get Listings for a given City and State. By default this api returns maximum of 20 listings. Use "offset & limit" in the request as query parameter to return more listings.
+        Offset is the point at which the mls listings should be returned and limit is the size of the mls listings to be returned. Maximum limit is 250. Resets to max limit if the input is over the allowed max limit. */
+    rpc GetMlsListingsByCity (GetMlsListingsByCityRequest) returns (GetMlsListingsByCityResponse) {
+        option (google.api.http) = {
+            get: "/mls/city/{city}"
+            additional_bindings {
+                get: "/mls/city/{city}/state/{state}"
+            }
+        };
+    }
+
+    /* Get Listings for a given State. By default this api returns maximum of 20 listings. Use "offset & limit" in the request as query parameter to return more listings.
+        Offset is the point at which the mls listings should be returned and limit is the size of the mls listings to be returned. Maximum limit is 250. Resets to max limit if the input is over the allowed max limit. */
+    rpc GetMlsListingsByState (GetMlsListingsByStateRequest) returns (GetMlsListingsByStateResponse) {
+        option (google.api.http) = {
+            get: "/mls/state/{state}"
+        };
+    }
+
+    /* Get Listings for a given Postal Code. By default this api returns maximum of 20 listings. Use "offset & limit" in the request as query parameter to return more listings.
+        Offset is the point at which the mls listings should be returned and limit is the size of the mls listings to be returned. Maximum limit is 250. Resets to max limit if the input is over the allowed max limit. */
+    rpc GetMlsListingsByPostalCode (GetMlsListingsByPostalCodeRequest) returns (GetMlsListingsByPostalCodeResponse) {
+        option (google.api.http) = {
+            get: "/mls/postalcode/{postal_code}"
+        };
+    }
+
+    /* Get Listings for a given Mls AgentId. By default this api returns maximum of 20 listings. Use "offset & limit" in the request as query parameter to return more listings.
+        Offset is the point at which the mls listings should be returned and limit is the size of the mls listings to be returned. Maximum limit is 250. Resets to max limit if the input is over the allowed max limit. */
+    rpc GetMlsListingsByAgentId (GetMlsListingsByAgentIdRequest) returns (GetMlsListingsByAgentIdResponse) {
+        option (google.api.http) = {
+            get: "/mls/agent/{list_agent_mls_id}"
+            additional_bindings {
+                get: "/mls/agent/{list_agent_mls_id}/source/{source_system_key}"
+            }
+        };
+    }
+
+    /* Get Listings for a given List Agent Master Id.
+        Offset is the point at which the mls listings should be returned and limit is the size of the mls listings to be returned. Maximum limit is 250. Resets to max limit if the input is over the allowed max limit. */
+    rpc GetMlsListingsByAgentMasterId (GetMlsListingsByAgentMasterIdRequest) returns (GetMlsListingsByAgentMasterIdResponse) {
+        option (google.api.http) = {
+            get: "/mls/agent/master/{list_agent_master_id}"
+        };
+    }
+
+    /* Get Listings for a given List OfficeMaster Id.
+    Offset is the point at which the mls listings should be returned and limit is the size of the mls listings to be returned. Maximum limit is 250. Resets to max limit if the input is over the allowed max limit. */
+    rpc GetMlsListingsByOfficeMasterId (GetMlsListingsByOfficeMasterIdRequest) returns (GetMlsListingsByOfficeMasterIdResponse) {
+        option (google.api.http) = {
+            get: "/mls/office/master/{list_office_master_id}"
+        };
+    }
+
+    /* Get Listings for a given Listing Agent Guid (DashMls). By default this api returns maximum of 20 listings. Use "offset & limit" in the request as query parameter to return more listings.
+        Offset is the point at which the mls listings should be returned and limit is the size of the mls listings to be returned. Maximum limit is 250. Resets to max limit if the input is over the allowed max limit. */
+    rpc GetMlsListingsByAgentGuid (GetMlsListingsByAgentGuidRequest) returns (GetMlsListingsByAgentGuidResponse) {
+        option (google.api.http) = {
+            get: "/mls/dash/agent/{listing_agent_guid}"
+        };
+    }
+
+    /* Experimental API. Get Listings for a given address. This api returns listings for a matching unparsed address in text format.
+        By default this api returns maximum of 20 listings. Use "offset & limit" in the request as query parameter to return more listings.
+        Offset is the point at which the mls listings should be returned and limit is the size of the mls listings to be returned. Maximum limit is 250. Resets to max limit if the input is over the allowed max limit. */
+    rpc GetMlsListingsByAddress (GetMlsListingsByAddressRequest) returns (GetMlsListingsByAddressResponse) {
+        option (google.api.http) = {
+            get: "/mls/address/{unparsed_address}"
+            additional_bindings {
+                get: "/mls/address/{unparsed_address}/city/{city}/state/{state}/postalcode/{postal_code}"
+            }            
+        };
+    }
+
+    /* Get Listings for a given Subdivision. By default this api returns maximum of 20 listings. Use "offset & limit" in the request as query parameter to return more listings.
+        Offset is the point at which the mls listings should be returned and limit is the size of the mls listings to be returned. Maximum limit is 250. Resets to max limit if the input is over the allowed max limit. */
+    rpc GetMlsListingsBySubdivision (GetMlsListingsBySubdivisionRequest) returns (GetMlsListingsBySubdivisionResponse) {
+        option (google.api.http) = {
+            get: "/mls/subdivision/{subdivision_name}"
+        };
+    }
+
+    /* Get Listings for a given List Company Master Id.
+     Offset is the point at which the mls listings should be returned and limit is the size of the mls listings to be returned. Maximum limit is 250. Resets to max limit if the input is over the allowed max limit. */
+    rpc GetMlsListingsByCompanyMasterId (GetMlsListingsByCompanyMasterIdRequest) returns (GetMlsListingsByCompanyMasterIdResponse) {
+        option (google.api.http) = {
+            get: "/mls/company/master/{company_master_id}"
+        };
+    }
+
+    /* Get Listings for a given Company Staff Id. By default this api returns maximum of 20 listings. Use "offset & limit" in the request as query parameter to return more listings.
+        Offset is the point at which the mls listings should be returned and limit is the size of the mls listings to be returned. Maximum limit is 250. Resets to max limit if the input is over the allowed max limit. */
+    rpc GetMlsListingsByCompanyStaffId (GetMlsListingsByCompanyStaffIdRequest) returns (GetMlsListingsByCompanyStaffIdResponse) {
+        option (google.api.http) = {
+            get: "/mls/staff/{company_staff_master_id}"
+        };
+    }
+
+    /* Get Listings for a given Company Staff Guid. By default this api returns maximum of 20 listings. Use "offset & limit" in the request as query parameter to return more listings.
+        Offset is the point at which the mls listings should be returned and limit is the size of the mls listings to be returned. Maximum limit is 250. Resets to max limit if the input is over the allowed max limit. */
+    rpc GetMlsListingsByCompanyStaffGuid (GetMlsListingsByCompanyStaffGuidRequest) returns (GetMlsListingsByCompanyStaffGuidResponse) {
+        option (google.api.http) = {
+            get: "/mls/dash/staff/{company_staff_guid}"
+        };
+    }
+
+    /* Get Sold Listings data for the given date range(Valid Formats: 2020-01-01, 2020-01-01T01:01:01.000Z). If start and end date are not specified, the default is last 6 months from the current date.
+        startDate and endDate are optional. If the startDate exists and the endDate is not provided, the api will consider end date to be 6 months from the start date.
+        Offset is the point at which the sold listings should be returned and limit is the size of the sold listings to be returned. Maximum limit is 250. Resets to max limit if the input is over the allowed max limit. */
+    rpc GetMlsSoldListings (GetMlsSoldListingsRequest) returns (GetMlsSoldListingsResponse) {
+        option (google.api.http) = {
+            get: "/mls/listings/sold"
+        };
+    }
+
+    /* Stream Listings for a given mls source name. This api is a streaming variation of listings by source.
+        Use http2 to stream the response. Default idle timeout is 120 seconds. */
+    rpc StreamMlsListingBySource (GetMlsListingsBySourceRequest) returns (stream MlsListing) {
+        option (google.api.http) = {
+            get: "/mls/stream/source/{source_system_key}"
+        };
+    }
+
+    /* Stream Listings for a given City and State. This api is a streaming variation of listings by city and state.
+        Use http2 to stream the response. Default idle timeout is 120 seconds. */
+    rpc StreamMlsListingByCity (GetMlsListingsByCityRequest) returns (stream MlsListing) {
+        option (google.api.http) = {
+            get: "/mls/stream/city/{city}"
+            additional_bindings {
+                get: "/mls/stream/city/{city}/state/{state}"
+            }
+        };
+    }
+
+    /* Stream Listings for a given State.  This api is a streaming variation of listings by state.
+        Use http2 to stream the response. Default idle timeout is 120 seconds. */
+    rpc StreamMlsListingByState (GetMlsListingsByStateRequest) returns (stream MlsListing) {
+        option (google.api.http) = {
+            get: "/mls/stream/state/{state}"
+        };
+    }
+
+    /* Stream Listings for a given Postal Code. This api is a streaming variation of listings by postal code.
+        Use http2 to stream the response. Default idle timeout is 120 seconds. */
+    rpc StreamMlsListingByPostalCode (GetMlsListingsByPostalCodeRequest) returns (stream MlsListing) {
+        option (google.api.http) = {
+            get: "/mls/stream/postalcode/{postal_code}"
+        };
+    }
+
+    /* Listings changes or events streaming API. By default, this api streams all the events related to mls listings in real time using http2.
+        Reponse of this api encloses mls listings with event meta data(mlsChange) with attributes,
+        1. "marker" - Unique id for an event. This id can be used as query param in the request(marker=<marker id of previous successful change>) to resume the changes in case of failure,
+        2. "changeType" - MLS Change Type (insert, update, replace, delete),
+        3. "changeTime" - MLS Change Time.
+        Default idle timeout is 120 seconds. */
+    rpc StreamMlsListingEvent (StreamMlsListingEventRequest) returns (stream StreamMlsListingEventResponse) {
+        option (google.api.http) = {
+            get: "/mls/changes"
+        };
+    }
+
+    /* Search listings endpoint can be used to lookup listings using various attributes. Use "offset & limit" to paginate result.
+        lastChangeTimestamp can be used to get listings delta changes. Timestamp has to be in UTC format. For ex: 2021-09-09T00:00:00.000Z. Endpoint ignores nano seconds in the timestamp.
+        Offset is the point at which the mls listings should be returned and limit is the size of the mls listings to be returned. 
+        Default offset is 0 and defaukt limit is 20 listings. Maximum limit in a request is 250.
+    */
+    rpc SearchMlsListings (SearchMlsListingsRequest) returns (SearchMlsListingsResponse) {
+        option (google.api.http) = {
+            get: "/mls/listings/search"
+        };
+    }
+
+     /* Realogy listings endpoint can be used to lookup listings using various attributes. Use "offset & limit" to paginate result.
+        lastChangeTimestamp can be used to get listings delta changes. Timestamp has to be in UTC format. For ex: 2021-09-09T00:00:00.000Z. Endpoint ignores nano seconds in the timestamp.
+        Offset is the point at which the mls listings should be returned and limit is the size of the mls listings to be returned. 
+        Default offset is 0 and default limit is 20 listings. Maximum limit in a request is 250.
+    */
+    rpc GetRealogyListings (RealogyListingsRequest) returns (RealogyListingsResponse) {
+        option (google.api.http) = {
+            get: "/mls/listings/realogy"
+        };
+    }
+
+    // Health Check.
+    rpc HealthCheck (HealthRequest) returns (HealthResponse) {
+        option (google.api.http).get = "/internal/health";
+    }
+}
+
+// Request for listings by listing id.
+message GetMlsListingByListingIdRequest {
+    // The Listing ID is intended to be the identifier used to retrieve the information about a specific listing.
+    string listing_id = 1           [(tags) = "graphql:\"listingId,optional\" bson:\"listing_id\""];
+    // The unique identifier from the Source System.
+    string source_system_key = 2    [(tags) = "graphql:\"sourceSystemKey,optional\" bson:\"source_system_key\""];
+    // The postal code associated to a listing.
+    string postal_code = 3;
+}
+
+// Response for listings by listing id.
+message GetMlsListingByListingIdResponse {
+    // A list of listings.
+    repeated MlsListing mls_listings = 1 [(tags) = "graphql:\"mlsListings,optional\" bson:\"mls_listings\""];
+}
+
+// Request for listings by listing id.
+message UpdateMlsListingByListingIdRequest {
+    // The Listing ID is intended to be the identifier used to retrieve the information about a specific listing.
+    string listing_id = 1                       [(tags) = "graphql:\"listingId,optional\" bson:\"listing_id\""];
+    // The unique identifier from the Source System.
+    string source_system_key = 2                [(tags) = "graphql:\"sourceSystemKey,optional\" bson:\"source_system_key\""];
+    // The fields and groups contained within the Property Group.
+    UpdateProperty property = 3          [(tags) = "graphql:\"property,optional\" bson:\"property\""];
+    // The Media type is a representation of media, such as photos, virtual tours, documents/supplements, etc.
+    Media media = 4                             [(tags) = "graphql:\"media,optional\" bson:\"media\""];
+    // The OpenHouse type is a collection of fields commonly used to record an open house event.
+    OpenHouse open_house = 5                    [(tags) = "graphql:\"openHouse,optional\" bson:\"open_house\""];
+}
+
+// Response for listings by listing id.
+message UpdateMlsListingByListingIdResponse {
+     MlsListing mls_listings = 1   [(tags) = "graphql:\"mlsListings,optional\" bson:\"mls_listings\""];
+}
+
+// Property to update. Only list sub-documents/fields here that are allowed to be updated by the UpdateMlsListingByListingId endpoint.
+message UpdateProperty {
+    // listing section of the document to update.
+    UpdateListing listing = 1 [(tags) = "graphql:\"listing,optional\" bson:\"listing\""];
+}
+
+// Listing to update. Only list sub-documents/fields here that are allowed to be updated by the UpdateMlsListingByListingId endpoint.
+message UpdateListing {
+    // status to update.
+    string standard_status = 1 [(tags) = "graphql:\"standardStatus,optional\" bson:\"standard_status\""];
+    // remarks to update.
+    UpdateRemarks remarks = 2 [(tags) = "graphql:\"remarks,optional\" bson:\"remarks\""];
+    // price to update.
+    UpdatePrice price = 3 [(tags) = "graphql:\"price,optional\" bson:\"price\""];
+    // dates to update.
+    UpdateDates dates = 4 [(tags) = "graphql:\"dates,optional\" bson:\"dates\""];
+}
+
+// Remarks fields that are allowed to be updated via UpdateMlsListingByListingId endpoint.
+message UpdateRemarks {
+    //Text remarks that may be displayed to the public. In an MLS, it is the field where information is entered for the public. This information is intended to be visible on-line. This is typically information that describes the selling points of the building and/or land for sale. Local conditions and rules will determine what such content can contain. Generally, the following information is excluded: any information pertaining to entry to the property, the seller and/or tenant, listing member contact information. In other systems, these remarks will be determined by local business rules.
+    string public_remarks = 1                               [(tags) = "graphql:\"publicRemarks,optional\" bson:\"public_remarks\""];
+    // Remarks that may contain security or proprietary information and should be restricted from public view.
+    string private_remarks = 2                              [(tags) = "graphql:\"privateRemarks,optional\" bson:\"private_remarks\""];
+    // Selling comments from an agent (non-reso).
+    string selling_comments = 3                            [(tags) = "graphql:\"sellingComments,optional\" bson:\"selling_comments\""];
+}
+
+message UpdatePrice {
+    // The current price of the property as determined by the seller and the seller's broker. For auctions this is the minimum or reserve price.
+    double list_price = 1                                       [(tags) = "graphql:\"listPrice,optional\" bson:\"list_price\""];
+    // The amount of money paid by the purchaser to the seller for the property under the agreement.
+    double close_price = 2                                     [(tags) = "graphql:\"closePrice,optional\" bson:\"close_price\""];
+}
+
+message UpdateDates {
+    // The effective date of the agreement between the seller and the seller's broker. This is the date entered by the agent reflecting when the change occurred contractually, not a timestamp of when the change was made in the MLS.
+    google.protobuf.Timestamp listing_contract_date = 1     [(tags) = "graphql:\"listingContractDate,optional\" bson:\"listing_contract_date\""];
+    // The date when the listing agreement will expire. This is the date entered by the agent reflecting when the change occurred, or will occur, contractually, not a timestamp of when the change was made in the MLS. The expiration date of listings, prior to their expiration, cancellation, sale or lease, is confidential information and should be restricted to the agent and their managers, partners or broker.
+    google.protobuf.Timestamp expiration_date = 2           [(tags) = "graphql:\"expirationDate,optional\" bson:\"expiration_date\""];
+    // With for-sale listings, the date the purchase agreement was fulfilled. With lease listings, the date the requirements were fulfilled, such as contract and/or deposit. This is the date entered by the agent reflecting when the change occurred contractually, not a timestamp of when the change was made in the MLS.
+    google.protobuf.Timestamp close_date = 3               [(tags) = "graphql:\"closeDate,optional\" bson:\"close_date\""];
+    // The date a listing was canceled.
+    google.protobuf.Timestamp cancellation_date = 4        [(tags) = "graphql:\"cancellationDate,optional\" bson:\"cancellation_date\""];
+    // The transactional timestamp automatically recorded by the MLS system representing the most recent date/time the listing's status was set to Pending.
+    google.protobuf.Timestamp pending_timestamp = 5        [(tags) = "graphql:\"pendingTimestamp,optional\" bson:\"pending_timestamp\""];
+}
+
+// Request for listings by listing id.
+message  MlsListingInput {
+    // The Listing ID is intended to be the identifier used to retrieve the information about a specific listing.
+    string listing_id = 1                                   [(tags) = "graphql:\"listingId,optional\" bson:\"listing_id\""];
+    // The property type has fields commonly used in a Multiple Listing Service listing.
+    PropertyInput property = 2                           [(tags) = "graphql:\"propertyInput,optional\" bson:\"property_input\""];
+    // The standardized source system name (rdm - Referential Data Management) that should be prefixed with state code followed by underscore and the existing source name. Ex: ML (Colorado) should be CO_ML.
+    string rdm_source_system_key = 3                        [(tags) = "graphql:\"rdmSourceSystemKey,optional\" bson:\"rdm_source_system_key\""];    
+    
+   
+   
+}
+message PropertyInput{
+    // The type of a property such as SFR (Single Family Residence), MFR (Multi-Family Residence), MFD (Manufactured/Mobile Homes), CONDO, TOWNHOUSE, COOP, FARM, LAND, RENTAL, COMMERCIAL_SALE, COMMERCIAL_LEASE and UNKNOWN.
+    string property_type = 1                                [(tags) = "graphql:\"propertyType,optional\" bson:\"property_type\""];
+    // The fields and groups contained within the BuyerAgent Group.
+    ListingInput listing = 2                [(tags) = "graphql:\"listing,optional\" bson:\"listing\""];
+    // The location of a property
+    LocationInput location = 3                          [(tags) = "graphql:\"location,optional\" bson:\"location\""];
+   
+}
+message ListingInput{
+// The Listing ID is intended to be the identifier used to retrieve the information about a specific listing.
+string listing_id = 1                                   [(tags) = "graphql:\"listingId,optional\" bson:\"listing_id\""];
+// The status of the listing as it reflects the state of the contract between the listing agent and seller or an agreement with a buyer (ACTIVE, INACTIVE, SOLD, CANCELED, HOLD, UNKNOWN, EXPIRED, TEMP, TERMINATED, PENDING, WITHDRAWN).
+string standard_status = 2                              [(tags) = "graphql:\"standardStatus,optional\" bson:\"standard_status\""];
+ // The fields and groups contained within the Dates Group.
+ DatesInput dates = 3                              [(tags) = "graphql:\"dates,optional\" bson:\"dates\""];
+ // The fields and groups contained within the Price Group.
+ PriceInput price = 4                              [(tags) = "graphql:\"price,optional\" bson:\"price\""];
+ // The unique identifier of the Mls Source.
+ string source_system_key = 5      [(tags) = "graphql:\"sourceSystemKey,optional\" bson:\"source_system_key\""];    
+
+}
+
+message LocationInput{
+    // Address of the Location represented by AddressInput
+    AddressInput address = 1;
+}
+message AddressInput {
+    // The UnparsedAddress is a text representation of the address with the full civic location as a single entity. It may optionally include any of City, StateOrProvince, PostalCode and Country.
+    string unparsed_address = 1                             [(tags) = "graphql:\"unparsedAddress,optional\" bson:\"unparsed_address\""];
+    // The city in listing address.
+    string city = 2                                         [(tags) = "graphql:\"city,optional\" bson:\"city\""];
+    // The County, Parish or other regional authority.
+    string county_or_parish = 3                             [(tags) = "graphql:\"countyOrParish,optional\" bson:\"county_or_parish\""];
+    // Text field containing the accepted postal abbreviation for the state or province.
+    string state_or_province = 4                            [(tags) = "graphql:\"stateOrProvince,optional\" bson:\"state_or_province\""];
+    // The country of property's address.
+    string country = 12                                     [(tags) = "graphql:\"country,optional\" bson:\"country\""];    
+    string international_region = 13                        [(tags) = "graphql:\"internationalRegion,optional\" bson:\"international_region\""];
+  }
+  
+message PriceInput {
+    // The current price of the property as determined by the seller and the seller's broker. For auctions this is the minimum or reserve price.
+    double list_price = 1                                   [(tags) = "graphql:\"listPrice,optional\" bson:\"list_price\""];
+    // The amount of money paid by the purchaser to the seller for the property under the agreement.
+    double close_price = 2                                  [(tags) = "graphql:\"closePrice,optional\" bson:\"close_price\""];
+    // The value of currency will be 'USD' for US based mls sources and local currency for non US based mls sources.
+    string currency = 3                                     [(tags) = "graphql:\"currency,optional\" bson:\"currency\""];
+  }
+  
+message DatesInput {
+    // With for-sale listings, the date the purchase agreement was fulfilled. With lease listings, the date the requirements were fulfilled, such as contract and/or deposit. This is the date entered by the agent reflecting when the change occurred contractually, not a timestamp of when the change was made in the MLS.
+    google.protobuf.Timestamp close_date = 1                [(tags) = "graphql:\"closeDate,optional\" bson:\"close_date\""];
+ }
+
+
+// Response for mlslistings by listing id.
+message AddListingsResponse {
+    // Listing will have entire listing details.
+    MlsListing mls_listings = 1   [(tags) = "graphql:\"mlsListings,optional\" bson:\"mls_listings\""];
+}
+
+// Request for listings by listing guid.
+message GetMlsListingByListingGuidRequest {
+    // The Listing Guid from Dash.
+    string listing_guid = 1           [(tags) = "graphql:\"listingGuid,optional\" bson:\"listing_guid\""];
+    // The unique identifier of the Mls Source.
+    string source_system_key = 2      [(tags) = "graphql:\"sourceSystemKey,optional\" bson:\"source_system_key\""];    
+}
+
+// Response for listings by listing guid.
+message GetMlsListingByListingGuidResponse {
+    // A list of listings.
+    repeated MlsListing mls_listings = 1 [(tags) = "graphql:\"mlsListings,optional\" bson:\"mls_listings\""];
+}
+
+// Request for listings by source system key (MLS Source).
+message GetMlsListingsBySourceRequest {
+    // The unique identifier from the Source System.
+    string source_system_key = 1                         [(tags) = "graphql:\"sourceSystemKey,optional\" bson:\"source_system_key\""];
+    // Listing agent guid from dash.
+    string listing_agent_guid = 2                        [(tags) = "graphql:\"listingAgentGuid,optional\" bson:\"listing_agent_guid\""];
+    // The listings last change timestamp (in UTC) can be specified to receive listings back in time. Format: 2020-03-01T00:00:00.000Z.     
+    google.protobuf.Timestamp last_change_timestamp = 3  [(tags) = "graphql:\"lastChangeTimestamp,optional\" bson:\"last_change_date\""];
+    // Listing agent master id.
+    string list_agent_master_id = 4                      [(tags) = "graphql:\"listAgentMasterId,optional\" bson:\"list_agent_master_id\""];
+    // Listing office master id.
+    string list_office_master_id = 5                     [(tags) = "graphql:\"listOfficeMasterId,optional\" bson:\"list_office_master_id\""]; 
+    // Company master id.
+    string company_master_id = 6                         [(tags) = "graphql:\"companyMasterId,optional\" bson:\"company_master_id\""];
+    // The MLS Search filter.
+    MlsFilter filter = 99;
+    // The offset to start fetching listings. 
+    int32 offset = 100;
+    // The limits for pagination.
+    int32 limit = 101;
+}
+
+// Response for listings by source system key (MLS Source).
+message GetMlsListingsBySourceResponse {
+    // A list of listings.
+    repeated MlsListing mls_listings = 1 [(tags) = "graphql:\"mlsListings,optional\" bson:\"mls_listings\""];
+}
+
+// Request for listings by city.
+message GetMlsListingsByCityRequest {
+    // The city to search mls.
+    string city = 1;
+    // The state to search mls.
+    string state = 2;
+    // The MLS Search filter.
+    MlsFilter filter = 99;
+    // The offset to start fetching listings.
+    int32 offset = 100;
+    // The limits for pagination.
+    int32 limit = 101;
+}
+
+// Response for listings by city.
+message GetMlsListingsByCityResponse {
+    repeated MlsListing mls_listings = 1   [(tags) = "graphql:\"mlsListings,optional\" bson:\"mls_listings\""];
+}
+
+// Request for listings by state.
+message GetMlsListingsByStateRequest {
+    // The state to search mls.
+    string state = 1;
+    // The MLS Search filter.
+    MlsFilter filter = 99;
+    // The offset to start fetching listings
+    int32 offset = 100;
+    // The limits for pagination.
+    int32 limit = 101;
+}
+
+// Response for listings by state.
+message GetMlsListingsByStateResponse {
+    repeated MlsListing mls_listings = 1   [(tags) = "graphql:\"mlsListings,optional\" bson:\"mls_listings\""];
+}
+
+// Request for listings by postal code.
+message GetMlsListingsByPostalCodeRequest {
+    // The postal code to search mls.
+    string postal_code = 1;
+    // The MLS Search filter.
+    MlsFilter filter = 99;
+    // The offset to start fetching listings. 
+    int32 offset = 100;
+    // The limits for pagination.
+    int32 limit = 101;
+}
+
+// Response for listings by postal code.
+message GetMlsListingsByPostalCodeResponse {
+    repeated MlsListing mls_listings = 1   [(tags) = "graphql:\"mlsListings,optional\" bson:\"mls_listings\""];
+}
+
+// Request for listings by agent id.
+message GetMlsListingsByAgentIdRequest {
+    string list_agent_mls_id = 1;
+    // The unique identifier of the Mls Source.
+    string source_system_key = 2            [(tags) = "graphql:\"sourceSystemKey,optional\" bson:\"source_system_key\""];
+    // The MLS Search filter.
+    MlsFilter filter = 99;
+    // The offset to start fetching listings.
+    int32 offset = 100;
+    // The limits for pagination.
+    int32 limit = 101;
+}
+
+// Response for listings by agent id.
+message GetMlsListingsByAgentIdResponse {
+    repeated MlsListing mls_listings = 1   [(tags) = "graphql:\"mlsListings,optional\" bson:\"mls_listings\""];
+}
+
+// Request for listings by agent guid.
+message GetMlsListingsByAgentGuidRequest {
+    string listing_agent_guid = 1           [(tags) = "graphql:\"listingAgentGuid,optional\" bson:\"listing_agent_guid\""];
+    // The MLS Search filter.
+    MlsFilter filter = 99;
+    // The offset to start fetching listings.
+    int32 offset = 100;
+    // The limits for pagination.
+    int32 limit = 101;
+}
+
+// Response for listings by agent guid.
+message GetMlsListingsByAgentGuidResponse {
+    repeated MlsListing mls_listings = 1   [(tags) = "graphql:\"mlsListings,optional\" bson:\"mls_listings\""];
+}
+
+// Request for listings by unparsed address.
+message GetMlsListingsByAddressRequest {
+    // The UnparsedAddress is a text representation of the address with the full civic location as a single entity. It may optionally include any of City, StateOrProvince, PostalCode and Country.
+    string unparsed_address = 1            [(tags) = "graphql:\"unparsedAddress,optional\" bson:\"unparsed_address\""];    
+    // The city in listing address.
+    string city = 2                        [(tags) = "graphql:\"city,optional\" bson:\"city\""];
+    // Text field containing the accepted postal abbreviation for the state or province.
+    string state = 3                       [(tags) = "graphql:\"state,optional\" bson:\"state_or_province\""];
+    // The postal code portion of a street or mailing address.
+    string postal_code = 4                 [(tags) = "graphql:\"postalCode,optional\" bson:\"postal_code\""];
+    // The offset to start fetching listings.
+    int32 offset = 100;
+    // The limits for pagination.
+    int32 limit = 101;
+}
+
+// Response for listings by unparsed address.
+message GetMlsListingsByAddressResponse {
+    repeated MlsListing mls_listings = 1   [(tags) = "graphql:\"mlsListings,optional\" bson:\"mls_listings\""];
+}
+
+// Request for listings by Subdivision.
+message GetMlsListingsBySubdivisionRequest {
+    string subdivision_name = 1            [(tags) = "graphql:\"subdivisionName,optional\" bson:\"subdivision_name\""];
+    // The offset to start fetching listings.
+    int32 offset = 100;
+    // The limits for pagination.
+    int32 limit = 101;
+}
+
+// Response for listings by Subdivision.
+message GetMlsListingsBySubdivisionResponse {
+    repeated MlsListing mls_listings = 1   [(tags) = "graphql:\"mlsListings,optional\" bson:\"mls_listings\""];
+}
+
+//Request for listings by CompanyMasterId
+message GetMlsListingsByCompanyMasterIdRequest{
+    string company_master_id = 1            [(tags) = "graphql:\"companyMasterId,optional\" bson:\"company_master_id\""];
+    // The MLS Search filter.
+    MlsFilter filter = 99;
+    // The offset to start fetching listings.
+    int32 offset = 100;
+    // The limits for pagination.
+    int32 limit = 101;
+}
+
+// Response for listings by CompanyAgentMasterId.
+message GetMlsListingsByCompanyMasterIdResponse {
+    repeated MlsListing mls_listings = 1   [(tags) = "graphql:\"mlsListings,optional\" bson:\"mls_listings\""];
+}
+
+// Request for listings by CompanyStaffId.
+message GetMlsListingsByCompanyStaffIdRequest {
+    string company_staff_master_id = 1            [(tags) = "graphql:\"companyStaffMasterId,optional\" bson:\"company_staff_master_id\""];
+    // The MLS Search filter.
+    MlsFilter filter = 99;
+    // The offset to start fetching listings.
+    int32 offset = 100;
+    // The limits for pagination.
+    int32 limit = 101;
+}
+
+// Response for listings by CompanyStaffId.
+message GetMlsListingsByCompanyStaffIdResponse {
+    repeated MlsListing mls_listings = 1   [(tags) = "graphql:\"mlsListings,optional\" bson:\"mls_listings\""];
+}
+
+// Request for listings by CompanyStaffId.
+message GetMlsListingsByCompanyStaffGuidRequest {
+    string company_staff_guid = 1            [(tags) = "graphql:\"companyStaffGuid,optional\" bson:\"company_staff_guid\""];
+    // The MLS Search filter.
+    MlsFilter filter = 99;
+    // The offset to start fetching listings.
+    int32 offset = 100;
+    // The limits for pagination.
+    int32 limit = 101;
+}
+
+// Response for listings by CompanyStaffId.
+message GetMlsListingsByCompanyStaffGuidResponse {
+    repeated MlsListing mls_listings = 1   [(tags) = "graphql:\"mlsListings,optional\" bson:\"mls_listings\""];
+}
+
+// Request for listings by ListAgentMasterId.
+message GetMlsListingsByAgentMasterIdRequest {
+    string list_agent_master_id = 1            [(tags) = "graphql:\"listAgentMasterId,optional\" bson:\"list_agent_master_id\""];
+    // The MLS Search filter.
+    MlsFilter filter = 99;
+    // The offset to start fetching listings.
+    int32 offset = 100;
+    // The limits for pagination.
+    int32 limit = 101;
+}
+
+// Response for listings by ListAgentMasterId.
+message GetMlsListingsByAgentMasterIdResponse {
+    repeated MlsListing mls_listings = 1   [(tags) = "graphql:\"mlsListings,optional\" bson:\"mls_listings\""];
+}
+
+//Request for listings by ListOfficeMasterId
+message GetMlsListingsByOfficeMasterIdRequest{
+    string list_office_master_id = 1            [(tags) = "graphql:\"listOfficeMasterId,optional\" bson:\"list_office_master_id\""];
+    // The MLS Search filter.
+    MlsFilter filter = 99;
+    // The offset to start fetching listings.
+    int32 offset = 100;
+    // The limits for pagination.
+    int32 limit = 101;
+}
+
+// Response for listings by ListOfficeMasterId.
+message GetMlsListingsByOfficeMasterIdResponse {
+    repeated MlsListing mls_listings = 1   [(tags) = "graphql:\"mlsListings,optional\" bson:\"mls_listings\""];
+}
+
+// Request for sold listings.
+message GetMlsSoldListingsRequest {
+    // The start date should be in "YYYY-MM-DD" format.
+    string start_date = 1    [(tags) = "graphql:\"startDate,optional\" bson:\"start_date\""];
+    // The end date should be in "YYYY-MM-DD" format.
+    string end_date = 2      [(tags) = "graphql:\"endDate,optional\" bson:\"end_date\""];    
+    // The offset to start fetching listings.
+    int32 offset = 100;
+    // The limits for pagination.
+    int32 limit = 101;
+}
+
+// Response for sold listings.
+message GetMlsSoldListingsResponse {
+    // A list of listings.
+    repeated MlsListing mls_listings = 1 [(tags) = "graphql:\"mlsListings,optional\" bson:\"mls_listings\""];
+}
+
+// Request for streaming listing changes or events.
+message StreamMlsListingEventRequest {
+    // Unique value for a Mls Source. Optional request parameter to listen for mls changes specific to a mls source.
+    string source_system_key = 1     [(tags) = "graphql:\"sourceSystemKey,optional\" bson:\"source_system_key\""];
+    // Optional request parameter to listen mls changes specific to a property type.
+    string property_type = 2         [(tags) = "graphql:\"propertyType,optional\" bson:\"property_type\""];
+    // Start time to send mls events.
+    google.protobuf.Timestamp change_start_time = 99    [(tags) = "graphql:\"changeStartTime,optional\" bson:\"change_start_time\""];
+    // Optional parameter to listen for mls changes specific to a change type such as "insert, replace or delete".
+    string change_type = 100         [(tags) = "graphql:\"changeType,optional\" bson:\"change_type\""];
+    // Unique id for an mls change events. Optional request parameter that can be used to resume changes from the last successful event.
+    string marker = 101              [(tags) = "graphql:\"marker,optional\" bson:\"marker\""];
+    // Experimental parameter. Not intended to be used and no effect.
+    int32 size = 102                 [(tags) = "graphql:\"size,optional\" bson:\"size\""];
+}
+
+// Response for streaming listing changes or events.
+message StreamMlsListingEventResponse {
+    // Has meta data about the mls change events.
+    MlsChange mls_change = 1                     [(tags) = "graphql:\"mlsChange,optional\""];
+    // Mls Listing data thats changed.
+    MlsListing mls_listing = 2                   [(tags) = "graphql:\"mlsListing,optional\""];
+    // Unique id of a mls listing data.
+    string mls_id = 3                            [(tags) = "graphql:\"mlsId,optional\" bson:\"mls_id,optional\""];
+}
+
+// Meta data about the listing changes or events.
+message MlsChange {
+    // Unique id for an mls change events.
+    string marker = 1                            [(tags) = "graphql:\"marker,optional\" bson:\"marker\""];
+    // Change type such as "insert, replace or delete".
+    string change_type = 2                       [(tags) = "graphql:\"changeType,optional\" bson:\"change_type,optional\""];
+    // Mls listings change time.
+    google.protobuf.Timestamp change_time = 3    [(tags) = "graphql:\"changeTime,optional\" bson:\"change_time,optional\""];
+}
+
+// Request parameters to search listings.
+message SearchMlsListingsRequest {
+    // Search by listing id.
+    string listing_id = 1;    
+    // This field is specific to realogy listings. Boolean value that indicates this as realogy listings.
+    bool is_realogy_listing = 2;
+    // This field is specific to realogy listings. Boolean value that indicates this as luxury listings.
+    bool is_luxury_listing = 3;
+    // The listings last change timestamp (in UTC) can be specified to receive listings back in time. Format: 2021-09-09T00:00:00.000Z.     
+    google.protobuf.Timestamp last_change_timestamp = 4;
+    // The status of the listing as it reflects the state of the contract between the listing agent and seller or an agreement with a buyer (ACTIVE, INACTIVE, SOLD, CANCELED, HOLD, UNKNOWN, EXPIRED, TEMP, TERMINATED, PENDING, WITHDRAWN).
+    string standard_status = 5;
+    // Search query. supports "eq" and "like" operators. Format: q.listingId=like:1 000025 - returns "1000025903", "1000025931" etc.,
+    SearchQuery q = 99;
+    // Pagination field. The offset to fetch listings. 
+    int32 offset = 100;
+    // Pagination field. Maximum number of listings that needs to be returned in the response. Maximum limit is 250. API resets the limit to 250 automically if the request contains more than max.
+    int32 limit = 101;
+}
+
+message SearchQuery {
+    // Search by listing id.    
+    string listing_id = 1;    
+}
+
+enum ComparisonOperators {
+    eq = 0;
+    like = 1;
+}
+
+// Response for search mls listings.
+message SearchMlsListingsResponse {
+    // List of listings.
+    repeated MlsListing mls_listings = 1 [(tags) = "graphql:\"mlsListings,optional\" bson:\"mls_listings\""];
+}
+
+// RealogyListingRequest
+message RealogyListingsRequest {
+    // Search by listing id.
+    string listing_id = 1;    
+    // The listings last change timestamp (in UTC) can be specified to receive listings back in time. Format: 2021-09-09T00:00:00.000Z.     
+    google.protobuf.Timestamp last_change_timestamp = 2;
+    // The status of the listing as it reflects the state of the contract between the listing agent and seller or an agreement with a buyer (ACTIVE, INACTIVE, SOLD, CANCELED, HOLD, UNKNOWN, EXPIRED, TEMP, TERMINATED, PENDING, WITHDRAWN).
+    string standard_status = 3;
+    // The unique identifier from the Source System.
+    string source_system_key = 4                         [(tags) = "graphql:\"sourceSystemKey,optional\" bson:\"source_system_key\""];
+    // Search query. supports "eq" and "like" operators. Format: q.listingId=like:1 000025 - returns "1000025903", "1000025931" etc.,
+    SearchQuery q = 99;
+    // Pagination field. The offset to fetch listings. 
+    int32 offset = 100;
+    // Pagination field. Maximum number of listings that needs to be returned in the response. Maximum limit is 250. API resets the limit to 250 automically if the request contains more than max.
+    int32 limit = 101;
+}
+
+// Response for Realogy listings.
+message RealogyListingsResponse {
+    // List of listings.
+    repeated MlsListing mls_listings = 1 [(tags) = "graphql:\"mlsListings,optional\" bson:\"mls_listings\""];
+}
+
+// Request for health check.
+message HealthRequest {
+}
+
+// Response for health check.
+message HealthResponse {
+    double ok = 1              [(tags) = "bson:\"ok\""];
+}
+
+// Filters for listings.
+message MlsFilter {
+    // The type of a property such as SFR (Single Family Residence), MFR (Multi-Family Residence), MFD (Manufactured/Mobile Homes), CONDO, TOWNHOUSE, COOP, FARM, LAND, RENTAL, COMMERCIAL_SALE, COMMERCIAL_LEASE and UNKNOWN.
+    repeated string property_type = 1                       [(tags) = "graphql:\"propertyType,optional\" bson:\"property_type\""];
+    // The status of the listing as it reflects the state of the contract between the listing agent and seller or an agreement with a buyer (ACTIVE, INACTIVE, SOLD, CANCELED, HOLD, UNKNOWN, EXPIRED, TEMP, TERMINATED, PENDING, WITHDRAWN).
+    repeated string standard_status = 2                     [(tags) = "graphql:\"standardStatus,optional\" bson:\"standard_status\""];
+    repeated string architecture_style = 3                  [(tags) = "graphql:\"architectureStyle,optional\" bson:\"architecture_style\""];
+    // The minimum current price of the property as determined by the seller and the seller's broker.
+    double list_price_min = 4                               [(tags) = "graphql:\"listPriceMin,optional\" bson:\"list_price_min\""];
+    // The maximum current price of the property as determined by the seller and the seller's broker.
+    double list_price_max = 5                               [(tags) = "graphql:\"listPriceMax,optional\" bson:\"list_price_max\""];
+    // The mimumum total number of bedrooms in the dwelling.
+    int32 bedrooms_min = 6                                  [(tags) = "graphql:\"bedroomsMin,optional\" bson:\"bedrooms_min\""];
+    // The maximum total number of bedrooms in the dwelling.
+    int32 bathrooms_min = 7                                 [(tags) = "graphql:\"bathroomsMin ,optional\" bson:\"bathrooms_min \""];
+    double building_area_total_min = 8                      [(tags) = "graphql:\"buildingAreaTotalMin,optional\" bson:\"building_area_total_min\""];
+    double building_area_total_max = 9                      [(tags) = "graphql:\"buildingAreaTotalMax,optional\" bson:\"building_area_total_max\""];
+    int32 lot_size_square_feet_min = 10                     [(tags) = "graphql:\"lotSizeSquareFeetMin,optional\" bson:\"lot_size_square_feet_min\""];
+    int32 lot_size_square_feet_max = 11                     [(tags) = "graphql:\"lotSizeSquareFeetMax,optional\" bson:\"lot_size_square_feet_max\""];
+    int32 stories_total = 12                                [(tags) = "graphql:\"storiesTotal,optional\" bson:\"stories_total\""];
+    // The id for an agent as given in the original mls sources or system.
+    string list_agent_mls_id = 13                           [(tags) = "graphql:\"listAgentMlsId,optional\" bson:\"list_agent_mls_id\""];
+    string rdm_source_system_key = 14                       [(tags) = "graphql:\"rdmSourceSystemKey,optional\" bson:\"rdm_source_system_key\""];
+    repeated string postal_code = 15                        [(tags) = "graphql:\"postalCode,optional\" bson:\"postalCode\""];
+}
+
+// MLSListings. This is the canonical representation of listings data which closely follows RESO standard naming conventions.
+message MlsListing {
+    // The property type has fields commonly used in a Multiple Listing Service listing.
+    Property property = 1                           [(tags) = "graphql:\"property,optional\" bson:\"property\""];
+    // The Media type is a representation of media, such as photos, virtual tours, documents/supplements, etc.
+    Media media = 2                                 [(tags) = "graphql:\"media,optional\" bson:\"media\""];
+    // The OpenHouse type is a collection of fields commonly used to record an open house event.
+    OpenHouse open_house = 3                        [(tags) = "graphql:\"openHouse,optional\" bson:\"open_house\""];
+    // Listings data related to Dash system.
+    Dash dash = 4                                   [(tags) = "graphql:\"dash,optional\" bson:\"dash\""];
+    // List of master id's. Used for internal purpose.
+    MasterId master_id = 5                          [(tags) = "graphql:\"masterId,optional\" bson:\"master_id\""];
+    // The live stream open house.
+    LiveStreamOpenHouse live_stream_open_house = 6  [(tags) = "graphql:\"liveStreamOpenHouse,optional\" bson:\"live_stream_open_house\""];  
+    // Internal has fields enriched for internal usages.
+    Internal internal = 7                           [(tags) = "graphql:\"internal\" bson:\"internal\""];
+    // This has fields internal to realogy.
+    Realogy realogy = 8                             [(tags) = "graphql:\"realogy\" bson:\"realogy\""];
+    // The internal source flag indicates that this listing belongs to an internal business system and not an actual MLS listing. Examples : ELL, SOLO.
+    bool is_internal_source = 9                     [(tags) = "graphql:\"isInternalSource,optional\" bson:\"is_internal_source\""];
+}
+
+// Property.
+message Property {
+    // The type of a property such as SFR (Single Family Residence), MFR (Multi-Family Residence), MFD (Manufactured/Mobile Homes), CONDO, TOWNHOUSE, COOP, FARM, LAND, RENTAL, COMMERCIAL_SALE, COMMERCIAL_LEASE and UNKNOWN.
+    string property_type = 1            [(tags) = "graphql:\"propertyType,optional\" bson:\"property_type\""];
+    // The subtype of a property varies by MLS. Some examples are Triplex, Quadruplex, Duplex, Condo Shared Wall, Condo Freestanding, Twin Single, Industrial Land, Farm Livestock, Retail Land, Detached, Attached, Tenancy in Common, Stock Cooperative, etc.
+    string property_sub_type = 2        [(tags) = "graphql:\"propertySubType,optional\" bson:\"property_sub_type\""];
+    // The financial data for rental and commercial property.
+    Financial financial = 3             [(tags) = "graphql:\"financial,optional\" bson:\"financial\""];
+    // The fields and groups contained within the BuyerAgent Group.
+    Listing listing = 4                 [(tags) = "graphql:\"listing,optional\" bson:\"listing\""];
+    // The fields and groups contained within the Tax Group.
+    Tax tax = 5                         [(tags) = "graphql:\"tax,optional\" bson:\"tax\""];
+    // The fields and groups contained within the Hoa Group.
+    Hoa hoa = 6                         [(tags) = "graphql:\"hoa,optional\" bson:\"hoa\""];
+    // The fields and groups contained within the Address Group.
+    Location location = 7               [(tags) = "graphql:\"location,optional\" bson:\"location\""];
+    // The fields and groups contained within the GreenMarketing Group.
+    Structure structure = 8             [(tags) = "graphql:\"structure,optional\" bson:\"structure\""];
+    // The fields and groups contained within the Characteristics Group.
+    Characteristics characteristics = 9 [(tags) = "graphql:\"characteristics,optional\" bson:\"characteristics\""];
+    // The fields and groups contained within the Utilities Group.
+    Utilities utilities = 10            [(tags) = "graphql:\"utilities,optional\" bson:\"utilities\""];
+    // The fields and groups contained within the Equipment Group.
+    Equipment equipment = 11            [(tags) = "graphql:\"equipment,optional\" bson:\"equipment\""];
+    // The fields and groups contained within the Business Group.
+    Business business = 12              [(tags) = "graphql:\"business,optional\" bson:\"business\""];
+    // Total number of photos available as per MLS.
+    int32 photos_count = 13             [(tags) = "graphql:\"photosCount,optional\" bson:\"photos_count\""];    
+}
+
+// Financial.
+message Financial {
+    // A list of services or items that the tenant is not responsible to pay.
+    string rent_includes = 1            [(tags) = "graphql:\"rentIncludes,optional\" bson:\"rent_includes\""];
+    string sales_includes = 2           [(tags) = "graphql:\"salesIncludes,optional\" bson:\"sales_includes\""];
+    // The annual expense that is not paid directly by the tenant and is included in the Operating Expense calculations.
+    double electric_expense = 3         [(tags) = "graphql:\"electricExpense,optional\" bson:\"electric_expense\""];
+    // A list of services or items that the tenant is responsible to pay.
+    string tenant_pays = 4              [(tags) = "graphql:\"tenantPays,optional\" bson:\"tenant_pays\""];
+    // A list of expenses for the property paid for by the owner as opposed to the tenant (e.g. Water, Trash, Electric).
+    string owner_pays = 5               [(tags) = "graphql:\"ownerPays,optional\" bson:\"owner_pays\""];
+    // A list of income sources included in the GrossScheduledIncome and GrossIncome. i.e. Laundry, Parking, Recreation, Storage, etc.
+    string income_includes = 6          [(tags) = "graphql:\"incomeIncludes,optional\" bson:\"income_includes\""];
+    // Is the property in a rent control area.
+    bool is_rent_control = 7            [(tags) = "graphql:\"isRentControl,optional\" bson:\"is_rent_control\""];
+    // Total actual rent currently being collected from tenants of the income property.
+    double total_actual_rent = 8        [(tags) = "graphql:\"totalActualRent,optional\" bson:\"total_actual_rent\""];
+}
+
+// Listing.
+message Listing {
+    // The Listing ID is intended to be the identifier used to retrieve the information about a specific listing. In a multiple originating system or a merged system, this value may not be unique and may require the use of the provider system to create a synthetic unique value.
+    // ListingId's with hyphen(-) should be converted to underscore (_) internally by the pipeline.
+    string listing_id = 1               [(tags) = "graphql:\"listingId,optional\" bson:\"listing_id\""];
+    // The unique identifier from the Source System, This is the unique internal name we use for a given MLS. Can be identified using the MLS Display Rules API.
+    string source_system_key = 2        [(tags) = "graphql:\"sourceSystemKey,optional\" bson:\"source_system_key\""];
+    // The legal name of the company from which the record was directly received.
+    string source_system_name = 3       [(tags) = "graphql:\"sourceSystemName,optional\" bson:\"source_system_name\""];
+    // The status of the listing as it reflects the state of the contract between the listing agent and seller or an agreement with a buyer (ACTIVE, INACTIVE, SOLD, CANCELED, HOLD, UNKNOWN, EXPIRED, TEMP, TERMINATED, PENDING, WITHDRAWN).
+    string standard_status = 4          [(tags) = "graphql:\"standardStatus,optional\" bson:\"standard_status\""];
+    // Commercial data.
+    string building_permits = 5         [(tags) = "graphql:\"buildingPermits,optional\" bson:\"building_permits\""];
+    // A list of the Documents available for the property. Knowing what documents are available for the property is valuable information.
+    string documents_available = 6      [(tags) = "graphql:\"documentsAvailable,optional\" bson:\"documents_available\""];
+    // Commercial data.
+    string disclosures = 7              [(tags) = "graphql:\"disclosures,optional\" bson:\"disclosures\""];
+    // The fields and groups contained within the Contract Group.
+    Contract contract = 8               [(tags) = "graphql:\"contract,optional\" bson:\"contract\""];
+    // The fields and groups contained within the Price Group.
+    Price price = 9                     [(tags) = "graphql:\"price,optional\" bson:\"price\""];
+    // The fields and groups contained within the BuyerAgent Group.
+    AgentOffice agent_office = 10       [(tags) = "graphql:\"agentOffice,optional\" bson:\"agent_office\""];
+    // The fields and groups contained within the Compensation Group.
+    Compensation compensation = 11      [(tags) = "graphql:\"compensation,optional\" bson:\"compensation\""];
+    // The fields and groups contained within the Dates Group.
+    Dates dates = 12                    [(tags) = "graphql:\"dates,optional\" bson:\"dates\""];
+    // The fields and groups contained within the Remarks Group.
+    Remarks remarks = 13                [(tags) = "graphql:\"remarks,optional\" bson:\"remarks\""];
+    // The fields and groups contained within the Marketing Group.
+    Marketing marketing = 14            [(tags) = "graphql:\"marketing,optional\" bson:\"marketing\""];
+    Closing closing = 15                [(tags) = "graphql:\"closing,optional\" bson:\"closing\""];
+    bool home_warranty = 16             [(tags) = "graphql:\"homeWarranty,optional\" bson:\"home_warranty\""];
+    // The raw status value from the MLS.
+    string mls_status = 17              [(tags) = "graphql:\"mlsStatus,optional\" bson:\"mls_status\""];    
+    // The value is derived based on the MLS raw status.
+    bool   pending_offer = 18           [(tags) = "graphql:\"pendingOffer,optional\" bson:\"pending_offer\""];
+    // The number of days the property is on market in active status
+    int32 days_on_market = 19           [(tags) = "graphql:\"daysOnMarket,optional\" bson:\"days_on_market\""];        
+    // The standardized source system name (rdm - Referential Data Management) that should be prefixed with state code followed by underscore and the existing source name. Ex: ML (Colorado) should be CO_ML.
+    string rdm_source_system_key = 20   [(tags) = "graphql:\"rdmSourceSystemKey,optional\" bson:\"rdm_source_system_key\""];    
+    // Indicates that this listing has not yet been on market but will be on market soon. A listing contract has been executed. Coming Soon is different from Hold and Withdrawn as the property, under the current listing contract only, has not been previously on market. 
+    bool is_coming_soon = 21            [(tags) = "graphql:\"isComingSoon,optional\" bson:\"is_coming_soon\""];
+    // Original listing number or listing id in MLS source system.
+    string mls_listing_id = 22          [(tags) = "graphql:\"mlsListingId,optional\" bson:\"mls_listing_id\""];
+    string listing_terms = 23       [(tags) = "graphql:\"listingTerms,optional\" bson:\"listing_terms\""];
+}
+
+// Contract.
+message Contract {
+    // The type of financing that the seller currently has in place for the property being sold. i.e. cash, assumable, FHA loan, etc.
+    string current_financing = 1                                [(tags) = "graphql:\"currentFinancing,optional\" bson:\"current_financing\""];
+    // The type of sale. i.e. Standard, REO, Short Sale, Probate, Auction, NOD, etc., at the time of listing.
+    SpecialListingConditions special_listing_conditions = 2     [(tags) = "graphql:\"specialListingConditions,optional\" bson:\"special_listing_conditions\""];
+    bool is_hud_owned_dates = 3                                       [(tags) = "graphql:\"isHudOwnedDates,optional\" bson:\"is_hud_owned_dates\""];
+}
+
+// This group provides informations for sale type. i.e. Standard, REO, Short Sale, Probate, Auction, NOD, etc., at the time of listing.
+message SpecialListingConditions {
+    // Is the listed property currently in the process of foreclosure.
+    bool is_foreclosure = 1            [(tags) = "graphql:\"isForeclosure,optional\" bson:\"is_foreclosure\""];
+    // Is the listing a short sale (short pay) and may require bank approval.
+    bool is_short_sale = 2             [(tags) = "graphql:\"isShortSale,optional\" bson:\"is_short_sale\""];
+    // Is the listed property a probate sale.
+    bool is_probate_sale = 3           [(tags) = "graphql:\"isProbateSale,optional\" bson:\"is_probate_sale\""];
+}
+
+// Price.
+message Price {
+    // The current price of the property as determined by the seller and the seller's broker. For auctions this is the minimum or reserve price.
+    double list_price = 1                                       [(tags) = "graphql:\"listPrice,optional\" bson:\"list_price\""];
+    // Higher range of the listing price if available.
+    double list_price_high = 2                                  [(tags) = "graphql:\"listPriceHigh,optional\" bson:\"list_price_high\""];
+    // Has the property price reduced.
+    bool is_price_reduced = 3                                   [(tags) = "graphql:\"isPriceReduced,optional\" bson:\"is_price_reduced\""];
+    // The time at which the price changed.
+    google.protobuf.Timestamp price_change_timestamp = 4        [(tags) = "graphql:\"priceChangeTimestamp,optional\" bson:\"price_change_timestamp\""];
+    // The original price of the property on the initial agreement between the seller and the seller's broker.
+    double original_list_price = 5                              [(tags) = "graphql:\"originalListPrice,optional\" bson:\"original_list_price\""];
+    // The amount of money paid by the purchaser to the seller for the property under the agreement.
+    double close_price = 6                                      [(tags) = "graphql:\"closePrice,optional\" bson:\"close_price\""];
+    double pet_rent = 7                                         [(tags) = "graphql:\"petRent,optional\" bson:\"pet_rent\""];
+    double months_rent_upfront = 8                              [(tags) = "graphql:\"monthsRentUpfront,optional\" bson:\"months_rent_upfront\""];
+    // The value of currency will be 'USD' for US based mls sources and local currency for non US based mls sources.
+    string currency = 9                                         [(tags) = "graphql:\"currency,optional\" bson:\"currency\""];
+    double price_per_sq_ft = 10                                 [(tags) = "graphql:\"pricePerSqFt,optional\" bson:\"price_per_sq_ft\""];
+}
+
+// AgentOffice.
+message AgentOffice {
+    // The fields and groups contained within the ListAgent Group.
+    ListAgent list_agent = 1            [(tags) = "graphql:\"listAgent,optional\" bson:\"list_agent\""];
+    // The fields and groups contained within the ListOffice Group.
+    ListOffice list_office = 2          [(tags) = "graphql:\"listOffice,optional\" bson:\"list_office\""];
+    // The fields and groups contained within the CoListAgent Group.
+    CoListAgent co_list_agent = 3       [(tags) = "graphql:\"coListAgent,optional\" bson:\"co_list_agent\""];
+    // The fields and groups contained within the CoListOffice Group.
+    CoListOffice co_list_office = 4     [(tags) = "graphql:\"coListOffice,optional\" bson:\"co_list_office\""];
+    // The fields and groups contained within the BuyerAgent Group.
+    BuyerAgent buyer_agent = 5          [(tags) = "graphql:\"buyerAgent,optional\" bson:\"buyer_agent\""];
+    // The fields and groups contained within the BuyerOffice Group.
+    BuyerOffice buyer_office = 6        [(tags) = "graphql:\"buyerOffice,optional\" bson:\"buyer_office\""];
+    // The fields and groups contained within the CoBuyerAgent Group.
+    CoBuyerAgent co_buyer_agent = 7     [(tags) = "graphql:\"coBuyerAgent,optional\" bson:\"co_buyer_agent\""];
+    // The fields and groups contained within the CoBuyerOffice Group.
+    CoBuyerOffice co_buyer_office = 8   [(tags) = "graphql:\"coBuyerOffice,optional\" bson:\"co_buyer_office\""];
+    // Contact information used for IDX purposes
+    string idx_contact_info = 9         [(tags) = "graphql:\"idx_contact_info,optional\" bson:\"idx_contact_info\""];    
+}
+
+// ListAgent.
+message ListAgent {
+    // The full name of the listing agent. (First Middle Last).
+    string list_agent_fullname = 1                                      [(tags) = "graphql:\"listAgentFullname,optional\" bson:\"list_agent_fullname\""];
+    // The identifier for the member. The value may not be unique, specifically in the case of aggregation systems, this value should be the identifier from the original system.
+    string list_agent_mls_id = 2                                        [(tags) = "graphql:\"listAgentMlsId,optional\" bson:\"list_agent_mls_id\""];
+    // North American 10 digit phone numbers should be in the format of ###-###-#### (separated by hyphens). Other conventions should use the common local standard. International numbers should be preceded by a plus symbol.
+    string list_agent_office_phone = 3                                  [(tags) = "graphql:\"listAgentOfficePhone,optional\" bson:\"list_agent_office_phone\""];
+    string list_agent_office_phone_type = 4                             [(tags) = "graphql:\"listAgentOfficePhoneType,optional\" bson:\"list_agent_office_phone_type\""];
+    // The license of the listing agent. Separate multiple licenses with a comma and space.
+    string list_agent_state_license = 5                                 [(tags) = "graphql:\"listAgentStateLicense,optional\" bson:\"list_agent_state_license\""];
+    string list_agent_state_license_state = 6                           [(tags) = "graphql:\"listAgentStateLicenseState,optional\" bson:\"list_agent_state_license_state\""];
+    string list_agent_email = 7                                         [(tags) = "graphql:\"listAgentEmail,optional\" bson:\"list_agent_email\""];
+    bool list_agent_active = 8                                          [(tags) = "graphql:\"listAgentActive,optional\" bson:\"list_agent_active\""];
+    string list_agent_address = 9                                       [(tags) = "graphql:\"listAgentAddress,optional\" bson:\"list_agent_address\""];
+    string list_agent_city = 10                                         [(tags) = "graphql:\"listAgentCity,optional\" bson:\"list_agent_city\""];
+    string list_agent_state_or_province = 11                            [(tags) = "graphql:\"listAgentStateOrProvince,optional\" bson:\"list_agent_state_or_province\""];
+    string list_agent_postal_code = 12                                  [(tags) = "graphql:\"listAgentPostalCode,optional\" bson:\"list_agent_postal_code\""];
+    string list_agent_type = 13                                         [(tags) = "graphql:\"listAgentType,optional\" bson:\"list_agent_type\""];
+    google.protobuf.Timestamp list_agent_original_entry_timestamp = 14  [(tags) = "graphql:\"listAgentOriginalEntryTimestamp,optional\" bson:\"list_agent_original_entry_timestamp\""];
+    google.protobuf.Timestamp list_agent_modification_timestamp = 15    [(tags) = "graphql:\"listAgentModificationTimestamp,optional\" bson:\"list_agent_modification_timestamp\""];
+    string list_agent_phone = 16                                        [(tags) = "graphql:\"listAgentPhone,optional\" bson:\"list_agent_phone\""];
+    string attribution_contact = 17                                     [(tags) = "graphql:\"attributionContact,optional\" bson:\"attribution_contact\""];
+}
+
+// ListOffice.
+message ListOffice {
+    // The legal name of the brokerage representing the seller.
+    string list_office_name = 1                                             [(tags) = "graphql:\"listOfficeName,optional\" bson:\"list_office_name\""];
+    // The North American 10 digit phone numbers should be in the format of ###-###-#### (separated by hyphens). Other conventions should use the common local standard. International numbers should be preceded by a plus symbol.
+    string list_office_phone = 2                                            [(tags) = "graphql:\"listOfficePhone,optional\" bson:\"list_office_phone\""];
+    // The list office identifier. The value may not be unique, specifically in the case of aggregation systems, this value should be the identifier from the original system.
+    string list_office_mls_id = 3                                           [(tags) = "graphql:\"listOfficeMlsId,optional\" bson:\"list_office_mls_id\""];
+    string list_office_address = 4                                          [(tags) = "graphql:\"listOfficeAddress,optional\" bson:\"list_office_address\""];
+    string list_office_city = 5                                             [(tags) = "graphql:\"listOfficeCity,optional\" bson:\"list_office_city\""];
+    string list_office_state_or_province = 6                                [(tags) = "graphql:\"listOfficeStateOrProvince,optional\" bson:\"list_office_state_or_province\""];
+    string list_office_postal_code = 7                                      [(tags) = "graphql:\"listOfficePostalCode,optional\" bson:\"list_office_postal_code\""];
+    string list_office_email = 8                                            [(tags) = "graphql:\"listOfficeEmail,optional\" bson:\"list_office_email\""];
+    string list_office_fax = 9                                              [(tags) = "graphql:\"listOfficeFax,optional\" bson:\"list_office_fax\""];
+    google.protobuf.Timestamp list_office_original_entry_timestamp = 10     [(tags) = "graphql:\"listOfficeOriginalEntryTimestamp,optional\" bson:\"list_office_original_entry_timestamp\""];
+    google.protobuf.Timestamp list_office_modification_timestamp = 11       [(tags) = "graphql:\"listOfficeModificationTimestamp,optional\" bson:\"list_office_modification_timestamp\""];
+}
+
+// CoListAgent.
+message CoListAgent {
+    // The full name of the co-listing agent. (First Middle Last).
+    string co_list_agent_full_name = 1              [(tags) = "graphql:\"coListAgentFullName,optional\" bson:\"co_list_agent_full_name\""];
+    // The co-list agent identifier. The value may not be unique, specifically in the case of aggregation systems, this value should be the identifier from the original system.
+    string co_list_agent_mls_id = 2                 [(tags) = "graphql:\"coListAgentMlsId,optional\" bson:\"co_list_agent_mls_id\""];
+    string co_list_agent_office_phone = 3           [(tags) = "graphql:\"coListAgentOfficePhone,optional\" bson:\"co_list_agent_office_phone\""];
+}
+
+// CoListOffice.
+message CoListOffice {
+    // The legal name of the brokerage co-representing the seller.
+    string co_list_office_name = 1                  [(tags) = "graphql:\"coListOfficeName,optional\" bson:\"co_list_office_name\""];
+    // The co-list office identifier. The value may not be unique, specifically in the case of aggregation systems, this value should be the identifier from the original system.
+    string co_list_office_mls_id = 2                [(tags) = "graphql:\"coListOfficeMlsId,optional\" bson:\"co_list_office_mls_id\""];
+    string co_list_office_phone = 3                 [(tags) = "graphql:\"coListOfficePhone,optional\" bson:\"co_list_office_phone\""];
+}
+
+// BuyerAgent.
+message BuyerAgent {
+    // The full name of the buyer's agent. (First Middle Last).
+    string buyer_agent_fullname = 1                 [(tags) = "graphql:\"buyerAgentFullname,optional\" bson:\"buyer_agent_fullname\""];
+    string buyer_agent_mls_id = 2                   [(tags) = "graphql:\"buyerAgentMlsId,optional\" bson:\"buyer_agent_mls_id\""];
+    string buyer_office_phone = 3                   [(tags) = "graphql:\"buyerOfficePhone,optional\" bson:\"buyer_office_phone\""];
+}
+
+// BuyerOffice.
+message BuyerOffice {
+    // The legal name of the brokerage representing the buyer.
+    string buyer_office_name = 1                    [(tags) = "graphql:\"buyerOfficeName,optional\" bson:\"buyer_office_name\""];
+    // The buyer office identifier. The value may not be unique, specifically in the case of aggregation systems, this value should be the identifier from the original system.
+    string buyer_office_mls_id = 2                  [(tags) = "graphql:\"buyerOfficeMlsId,optional\" bson:\"buyer_office_mls_id\""];
+    string buyer_office_phone = 3                   [(tags) = "graphql:\"buyerOfficePhone,optional\" bson:\"buyer_office_phone\""];
+}
+
+// CoBuyerAgent.
+message CoBuyerAgent {
+    // The full name of the buyer's co-agent. (First Middle Last).
+    string co_buyer_agent_fullname = 1              [(tags) = "graphql:\"coBuyerAgentFullname,optional\" bson:\"co_buyer_agent_fullname\""];
+    string co_buyer_agent_mls_id = 2                [(tags) = "graphql:\"coBuyerAgentMlsId,optional\" bson:\"co_buyer_agent_mls_id\""];
+}
+
+// CoBuyerOffice.
+message CoBuyerOffice {
+    // The legal name of the brokerage co-representing the buyer.
+    string co_buyer_office_name = 1                 [(tags) = "graphql:\"coBuyerOfficeName,optional\" bson:\"co_buyer_office_name\""];
+    string co_buyer_office_mls_id = 2               [(tags) = "graphql:\"coBuyerOfficeMlsId,optional\" bson:\"co_buyer_office_mls_id\""];
+    string co_buyer_office_phone = 3                [(tags) = "graphql:\"coBuyerOfficePhone,optional\" bson:\"co_buyer_office_phone\""];
+}
+
+// Compensation.
+message Compensation {
+    ListAgencyCompensation list_agency_compensation = 1     [(tags) = "graphql:\"listAgencyCompensation,optional\" bson:\"list_agency_compensation\""];
+    // The total commission to be paid for this sale, expressed as either a percentage or a constant currency amount.
+    BuyerAgencyCompensation buyer_agency_compensation = 2   [(tags) = "graphql:\"buyerAgencyCompensation,optional\" bson:\"buyer_agency_compensation\""];
+}
+
+// ListAgencyCompensation.
+message ListAgencyCompensation {
+    // The compensation in percentage.
+    double percentage = 1   [(tags) = "graphql:\"percentage,optional\" bson:\"percentage\""];
+    // The compensation as fee.
+    int32 fee = 2           [(tags) = "graphql:\"fee,optional\" bson:\"fee\""];
+    // The compensation as commission.
+    string commission = 3   [(tags) = "graphql:\"commission,optional\" bson:\"commission\""];
+}
+
+// This group provides informations on the total commission to be paid for this sale, expressed as either a percentage or a constant currency amount.
+message BuyerAgencyCompensation {
+    // The compensation in percentage.
+    double percentage = 1   [(tags) = "graphql:\"percentage,optional\" bson:\"percentage\""];
+    // The compensation as fee.
+    int32 fee = 2          [(tags) = "graphql:\"fee,optional\" bson:\"fee\""];
+    // The compensation as commission.
+    string commission = 3   [(tags) = "graphql:\"commission,optional\" bson:\"commission\""];
+}
+
+// Dates. This has aggregation of various dates associated with a listing.
+message Dates {
+    // The effective date of the agreement between the seller and the seller's broker. This is the date entered by the agent reflecting when the change occurred contractually, not a timestamp of when the change was made in the MLS.
+    google.protobuf.Timestamp listing_contract_date = 1     [(tags) = "graphql:\"listingContractDate,optional\" bson:\"listing_contract_date\""];
+    // The date when the listing first entered in the internal system.
+    google.protobuf.Timestamp first_appeared_date = 2       [(tags) = "graphql:\"firstAppearedDate,optional\" bson:\"first_appeared_date\""];
+    // The date when the listing agreement will expire. This is the date entered by the agent reflecting when the change occurred, or will occur, contractually, not a timestamp of when the change was made in the MLS. The expiration date of listings, prior to their expiration, cancellation, sale or lease, is confidential information and should be restricted to the agent and their managers, partners or broker.
+    google.protobuf.Timestamp expiration_date = 3           [(tags) = "graphql:\"expirationDate,optional\" bson:\"expiration_date\""];
+    // The last updated date for a listing in the internal system.
+    google.protobuf.Timestamp last_change_date = 4          [(tags) = "graphql:\"lastChangeDate,optional\" bson:\"last_change_date\""];
+    google.protobuf.Timestamp status_change_date = 5        [(tags) = "graphql:\"statusChangeDate,optional\" bson:\"status_change_date\""];
+    // The inserted date for a listing in the internal system.
+    google.protobuf.Timestamp inserted_date = 6             [(tags) = "graphql:\"insertedDate,optional\" bson:\"inserted_date\""];
+    // This is a place holder field for now to capture any major conversion done on a property like converting a garage to a room or it could even mean converting LAND to Residential Home, etc.
+    int32 year_converted = 7                                [(tags) = "graphql:\"yearConverted,optional\" bson:\"year_converted\""];
+    // Age of the property, another place holder field which is usually derived from year_built field.
+    int32 age = 8                                           [(tags) = "graphql:\"age,optional\" bson:\"age\""];
+    // The transactional timestamp automatically recorded by the MLS system representing the date/time the listing was entered and made visible to members of the MLS.
+    google.protobuf.Timestamp original_entry_timestamp = 9  [(tags) = "graphql:\"originalEntryTimestamp,optional\" bson:\"original_entry_timestamp\""];
+    // With for-sale listings, the date the purchase agreement was fulfilled. With lease listings, the date the requirements were fulfilled, such as contract and/or deposit. This is the date entered by the agent reflecting when the change occurred contractually, not a timestamp of when the change was made in the MLS.
+    google.protobuf.Timestamp close_date = 10               [(tags) = "graphql:\"closeDate,optional\" bson:\"close_date\""];
+    google.protobuf.Timestamp cancellation_date = 11        [(tags) = "graphql:\"cancellationDate,optional\" bson:\"cancellation_date\""];
+    // The transactional timestamp automatically recorded by the MLS system representing the most recent date/time the listing's status was set to Pending.
+    google.protobuf.Timestamp pending_timestamp = 12        [(tags) = "graphql:\"pendingTimestamp,optional\" bson:\"pending_timestamp\""];
+    // The date the listing was placed on market. Where possible, this date is reflective of the date entered by the agent reflecting when the change occurred contractually, not a timestamp of when the change was made in the MLS.
+    google.protobuf.Timestamp on_market_date = 13           [(tags) = "graphql:\"onMarketDate,optional\" bson:\"on_market_date\""];
+    // The date an offer was made with a contingency. The Listing remains On Market. This is the date entered by the agent reflecting when the change occurred contractually, not a timestamp of when the change was made in the MLS.
+    google.protobuf.Timestamp contingent_date = 14          [(tags) = "graphql:\"contingentDate,optional\" bson:\"contingent_date\""];
+    // The date the listing was taken off market. Where possible, this date is reflective of the date entered by the agent reflecting when the change occurred contractually, not a timestamp of when the change was made in the MLS.
+    google.protobuf.Timestamp off_market_date = 15          [(tags) = "graphql:\"offMarketDate,optional\" bson:\"off_market_date\""];
+    // The number of days the property is on market which includes both active and inactive status, as defined by the MLS business rules.
+    int32 cumulative_days_on_market = 16                    [(tags) = "graphql:\"cumulativeDaysOnMarket,optional\" bson:\"cumulative_days_on_market\""];    
+    google.protobuf.Timestamp modification_timestamp = 17   [(tags) = "graphql:\"modificationTimestamp,optional\" bson:\"modification_timestamp\""];   
+    google.protobuf.Timestamp mls_modification_timestamp = 18   [(tags) = "graphql:\"mlsModificationTimestamp,optional\" bson:\"mls_modification_timestamp\""]; 
+}
+
+// Remarks.
+message Remarks {
+    //Text remarks that may be displayed to the public. In an MLS, it is the field where information is entered for the public. This information is intended to be visible on-line. This is typically information that describes the selling points of the building and/or land for sale. Local conditions and rules will determine what such content can contain. Generally, the following information is excluded: any information pertaining to entry to the property, the seller and/or tenant, listing member contact information. In other systems, these remarks will be determined by local business rules.
+    string public_remarks = 1                               [(tags) = "graphql:\"publicRemarks,optional\" bson:\"public_remarks\""];
+    // Remarks that may contain security or proprietary information and should be restricted from public view.
+    string private_remarks = 2                              [(tags) = "graphql:\"privateRemarks,optional\" bson:\"private_remarks\""];
+    // Custom info pertaining to a given MLS. Context can vary between MLS's (Internal).
+    string misc_info = 3                                    [(tags) = "graphql:\"miscInfo,optional\" bson:\"misc_info\""];
+    // Selling comments from an agent (non-reso).
+    string selling_comments = 4                             [(tags) = "graphql:\"sellingComments,optional\" bson:\"selling_comments\""];
+    // A list of remarks about the listing including international language remarks.
+    repeated InternationalRemarks international_remarks = 5 [(tags) = "graphql:\"internationalRemarks,optional\" bson:\"international_remarks\""];
+}
+
+//International Remarks
+message InternationalRemarks {
+    // Remarks Language
+    string language_name = 1                                [(tags) = "graphql:\"languageName,optional\" bson:\"language_name\""];
+    // Remarks Type
+    string remark_type = 2                                  [(tags) = "graphql:\"remarkType,optional\" bson:\"remark_type\""];
+    // Remarks in HTML format
+    string html_remark = 3                                  [(tags) = "graphql:\"htmlRemark,optional\" bson:\"html_remark\""];
+}
+
+// Marketing.
+message Marketing {
+    string virtual_tour_url_unbranded = 1                   [(tags) = "graphql:\"virtualTourUrlUnbranded,optional\" bson:\"virtual_tour_url_unbranded\""];
+    bool internet_automated_valuation_display = 2           [(tags) = "graphql:\"internetAutomatedValuationDisplay,optional\" bson:\"internet_automated_valuation_display\""];
+    bool internet_consumer_comment = 3                      [(tags) = "graphql:\"internetConsumerComment,optional\" bson:\"internet_consumer_comment\""];
+    bool internet_entire_listing_display = 4                [(tags) = "graphql:\"internetEntireListingDisplay,optional\" bson:\"internet_entire_listing_display\""];
+    bool internet_address_display = 5                       [(tags) = "graphql:\"internetAddressDisplay,optional\" bson:\"internet_address_display\""];
+    // Static SEO URL using Address Id. (Internal).
+    string website_detail_page_url = 6                      [(tags) = "graphql:\"websiteDetailPageUrl,optional\" bson:\"website_detail_page_url\""];
+    // IDX participation consent flag. "true" indicates that this listing can be used for IDX purposes. "false" indicates that this listing cannot be displayed in internet.
+    bool is_idx_participation = 7                           [(tags) = "graphql:\"isIdxParticipation,optional\" bson:\"is_idx_participation\""];
+    string display_options = 8                              [(tags) = "graphql:\"displayOptions,optional\" bson:\"display_options\""];
+    string showing_options = 9                              [(tags) = "graphql:\"showingOptions,optional\" bson:\"showing_options\""];
+}
+
+// Closing.
+message Closing {
+    // The date the property will be available for possession/occupation.
+    google.protobuf.Timestamp availability_date = 1         [(tags) = "graphql:\"availabilityDate,optional\" bson:\"availability_date\""];
+}
+
+// Tax.
+message Tax {
+    // A division of the city or county into areas of different permissible land uses. This Zone field should be used for the short code that is commonly used.
+    string zoning = 1                                       [(tags) = "graphql:\"zoning,optional\" bson:\"zoning\""];
+    // A number used to uniquely identify a parcel or lot. This number is typically issued by the county or county assessor. The AP number format varies from county to county.
+    string parcel_number = 2                                [(tags) = "graphql:\"parcelNumber,optional\" bson:\"parcel_number\""];
+    // A type of legal description for land in developed areas where streets or other rights-of-ways delineate large parcels of land referred to as divided into lots on which homes or other types of developments are built. An example would be, "Lot 12 of Block 45 of Tract 3002 of the City of San Dunes, Desert County."
+    string tax_tract = 3                                    [(tags) = "graphql:\"taxTract,optional\" bson:\"tax_tract\""];
+    // The annual property tax amount as of the last assessment made by the taxing authority.
+    double tax_annual_amount = 4                            [(tags) = "graphql:\"taxAnnualAmount,optional\" bson:\"tax_annual_amount\""];
+    // The year in with the last assessment of the property value/tax was made.
+    int32 tax_year = 5                                      [(tags) = "graphql:\"taxYear,optional\" bson:\"tax_year\""];
+    // Any other annual taxes, not including the tax reported in the TaxAmount field, as of the last assessment made by the taxing authority.
+    double tax_other_annual_assessment_amount = 6            [(tags) = "graphql:\"taxOtherAnnualAssessmentAmount,optional\" bson:\"tax_other_annual_assessment_amount\""];
+}
+
+// HOA.
+message Hoa {
+    // A fee paid by the homeowner to the Home Owners Association which is used for the upkeep of the common area, neighborhood or other association related benefits.
+    double association_fee = 1                               [(tags) = "graphql:\"associationFee,optional\" bson:\"association_fee\""];
+    // The frequency the association fee is paid. For example, Weekly, Monthly, Annually, Bi-Monthly, One Time, etc.
+    string association_fee_frequency = 2                     [(tags) = "graphql:\"associationFeeFrequency,optional\" bson:\"association_fee_frequency\""];
+    // A fee paid by the homeowner to the second of two Home Owners Associations, which is used for the upkeep of the common area, neighborhood or other association related benefits.
+    int32 association_fee2 = 3                              [(tags) = "graphql:\"associationFee2,optional\" bson:\"association_fee2\""];
+    // The frequency the association fee is paid. For example, Weekly, Monthly, Annually, Bi-Monthly, One Time, etc.
+    string association_fee2_frequency = 4                    [(tags) = "graphql:\"associationFee2Frequency,optional\" bson:\"association_fee2_frequency\""];
+    // Amenities provided by the Home Owners Association, Mobile Park or Complex. For example Pool, Clubhouse, etc.
+    string association_amenities = 5                        [(tags) = "graphql:\"associationAmenities,optional\" bson:\"association_amenities\""];
+    // Services included with the association fee. For example Landscaping, Trash, Water, etc.
+    string association_fee_includes = 6                     [(tags) = "graphql:\"associationFeeIncludes,optional\" bson:\"association_fee_includes\""];
+    // Are pets allowed at the property being leased? A list of yes, no and more detailed restrictions/allowances.
+    string pets_allowed = 7                                 [(tags) = "graphql:\"petsAllowed,optional\" bson:\"pets_allowed\""];
+    // The name of the Home Owners Association.
+    string association_name = 8                             [(tags) = "graphql:\"associationName,optional\" bson:\"association_name\""];
+}
+
+// Location.
+message Location {
+    // Gis Group.
+    Gis gis = 1                                             [(tags) = "graphql:\"gis,optional\" bson:\"gis\""];
+    // Address Group.
+    Address address = 2                                     [(tags) = "graphql:\"address,optional\" bson:\"address\""];
+    // Area Group.
+    Area area = 3                                           [(tags) = "graphql:\"area,optional\" bson:\"area\""];
+    // School Group.
+    School school = 4                                       [(tags) = "graphql:\"school,optional\" bson:\"school\""];
+}
+
+// GIS.
+message Gis {
+    // Nearest cross streets to the property. This field is in addition to, and independent of, the driving directions field.
+    string cross_street = 1                                 [(tags) = "graphql:\"crossStreet,optional\" bson:\"cross_street\""];
+    // A map coordinate for the property. This is not necessarily the same as the geographic coordinate but may depend on the coordinate system used by the listing service.
+    string map_coordinate = 2                               [(tags) = "graphql:\"mapCoordinate,optional\" bson:\"map_coordinate\""];
+    // Driving directions to the property.
+    string directions = 3                                   [(tags) = "graphql:\"directions,optional\" bson:\"directions\""];    
+    double latitude = 4                                     [(tags) = "graphql:\"latitude,optional\" bson:\"latitude\""];    
+    double longitude = 5                                    [(tags) = "graphql:\"longitude,optional\" bson:\"longitude\""];
+    // The geographic latitude of some reference point on the property, specified in degrees and decimal parts. Positive numbers must not include the plus symbol.
+    double mls_latitude = 6                                 [(tags) = "graphql:\"mlsLatitude,optional\" bson:\"mls_latitude\""];
+    // The geographic longitude of some reference point on the property, specified in degrees and decimal parts. Positive numbers must not include the plus symbol.
+    double mls_longitude = 7                                [(tags) = "graphql:\"mlsLongitude,optional\" bson:\"mls_longitude\""];
+    double parcel_latitude = 8                              [(tags) = "graphql:\"parcelLatitude,optional\" bson:\"parcel_latitude\""];
+    double parcel_longitude = 9                             [(tags) = "graphql:\"parcelLongitude,optional\" bson:\"parcel_longitude\""];
+    string geocoded_city = 10                               [(tags) = "graphql:\"geocodedCity,optional\" bson:\"geocoded_city\""];
+    string neighborhood_id = 11                             [(tags) = "graphql:\"neighborhoodId,optional\" bson:\"neighborhood_id\""];
+    string neighborhood = 12                                [(tags) = "graphql:\"neighborhood,optional\" bson:\"neighborhood\""];
+}
+
+// Address.
+message Address {
+    // The UnparsedAddress is a text representation of the address with the full civic location as a single entity. It may optionally include any of City, StateOrProvince, PostalCode and Country.
+    string unparsed_address = 1                             [(tags) = "graphql:\"unparsedAddress,optional\" bson:\"unparsed_address\""];
+    // The city in listing address.
+    string city = 2                                         [(tags) = "graphql:\"city,optional\" bson:\"city\""];
+    // The County, Parish or other regional authority.
+    string county_or_parish = 3                             [(tags) = "graphql:\"countyOrParish,optional\" bson:\"county_or_parish\""];
+    // Text field containing the accepted postal abbreviation for the state or province.
+    string state_or_province = 4                            [(tags) = "graphql:\"stateOrProvince,optional\" bson:\"state_or_province\""];
+    // The postal code portion of a street or mailing address.
+    string postal_code = 5                                  [(tags) = "graphql:\"postalCode,optional\" bson:\"postal_code\""];
+    // The direction indicator that precedes the listed property's street name.
+    string street_dir_prefix = 6                            [(tags) = "graphql:\"streetDirPrefix,optional\" bson:\"street_dir_prefix\""];
+    // The direction indicator that follows a listed property's street address.
+    string street_dir_suffix = 7                            [(tags) = "graphql:\"streetDirSuffix,optional\" bson:\"street_dir_suffix\""];
+    // The street name portion of a listed property's street address.
+    string street_name = 8                                  [(tags) = "graphql:\"streetName,optional\" bson:\"street_name\""];
+    // The street number portion of a listed property's street address. In some areas the street number may contain non-numeric characters. This field can also contain extensions and modifiers to the street number, such as "1/2" or "-B".
+    string street_number = 9                                [(tags) = "graphql:\"streetNumber,optional\" bson:\"street_number\""];
+    // Text field containing the number or portion of a larger building or complex. Unit Number should appear following the street suffix or, if it exists, the street suffix direction, in the street address. Examples are: "APT G", "55", etc.
+    string unit_number = 10                                 [(tags) = "graphql:\"unitNumber,optional\" bson:\"unit_number\""];
+    // A subdivision of the county.
+    string township = 11                                    [(tags) = "graphql:\"township,optional\" bson:\"township\""];
+    // The country of property's address.
+    string country = 12                                     [(tags) = "graphql:\"country,optional\" bson:\"country\""];    
+    string international_region = 13                        [(tags) = "graphql:\"internationalRegion,optional\" bson:\"international_region\""];
+    string postal_code_plus4 = 14                           [(tags) = "graphql:\"postalCodePlus4,optional\" bson:\"postal_code_plus4\""];
+}
+
+// Area.
+message Area {
+    // The major marketing area name, as defined by the MLS or other non-governmental organization.
+    string mls_area_major = 1                               [(tags) = "graphql:\"mlsAreaMajor,optional\" bson:\"mls_area_major\""];
+    // A neighborhood, community, complex or builder tract.
+    string subdivision_name = 2                             [(tags) = "graphql:\"subdivisionName,optional\" bson:\"subdivision_name\""];
+}
+
+// School.
+message School {
+    string school_district = 1                              [(tags) = "graphql:\"schoolDistrict,optional\" bson:\"school_district\""];
+    // The name of the primary school having a catchment area that includes the associated property.
+    string elementary_school = 2                            [(tags) = "graphql:\"elementarySchool,optional\" bson:\"elementary_school\""];
+    // The name of the elementary school district having a catchment area that includes the associated property.
+    string elementary_school_district = 3                   [(tags) = "graphql:\"elementarySchoolDistrict,optional\" bson:\"elementary_school_district\""];
+    // The name of the junior or middle school having a catchment area that includes the associated property.
+    string middle_or_junior_school = 5                      [(tags) = "graphql:\"middleOrJuniorSchool,optional\" bson:\"middle_or_junior_school\""];
+    // The name of the high school having a catchment area that includes the associated property.
+    string high_school = 6                                  [(tags) = "graphql:\"highSchool,optional\" bson:\"high_school\""];
+    // The name of the high school district having a catchment area that includes the associated property.
+    string high_school_district = 7                         [(tags) = "graphql:\"highSchoolDistrict,optional\" bson:\"high_school_district\""];
+    // The name of the junior or middle school district having a catchment area that includes the associated property.
+    string middle_or_junior_school_district = 8             [(tags) = "graphql:\"middleOrJuniorSchoolDistrict,optional\" bson:\"middle_or_junior_school_district\""];
+    // School unified district id from third party data (Internal).
+    string sd_unif_id = 9                                   [(tags) = "graphql:\"sdUnifId,optional\" bson:\"sd_unif_id\""];
+    // School unified district id from third party data (Internal).
+    string sd_elem_id = 10                                  [(tags) = "graphql:\"sdElemId,optional\" bson:\"sd_elem_id\""];
+    // School unified district id from third party data (Internal).
+    string sd_sec_id = 11                                   [(tags) = "graphql:\"sdSecId,optional\" bson:\"sd_sec_id\""];
+    // School unified district id from third party data (Internal).
+    string saz_elem_id = 12                                 [(tags) = "graphql:\"sazElemId,optional\" bson:\"saz_elem_id\""];
+    // School unified district id from third party data (Internal).
+    string saz_middle_id = 13                               [(tags) = "graphql:\"sazMiddleId,optional\" bson:\"saz_middle_id\""];
+    // School unified district id from third party data (Internal).
+    string saz_high_id = 14                                 [(tags) = "graphql:\"sazHighId,optional\" bson:\"saz_high_id\""];
+}
+
+// Structure.
+message Structure {
+    string architecture_style = 1                           [(tags) = "graphql:\"architectureStyle,optional\" bson:\"architecture_style\""];
+    // A list describing the heating features of the property.
+    string heating = 2                                      [(tags) = "graphql:\"heating,optional\" bson:\"heating\""];
+    // A list describing the cooling or air conditioning features of the property.
+    string cooling = 3                                      [(tags) = "graphql:\"cooling,optional\" bson:\"cooling\""];
+    // A list of the materials that were used in the construction of the property.
+    string construction_materials = 4                       [(tags) = "graphql:\"constructionMaterials,optional\" bson:\"construction_materials\""];
+    // A list of the type(s) of flooring found within the property.
+    string flooring = 5                                     [(tags) = "graphql:\"flooring,optional\" bson:\"flooring\""];
+    // The number of levels in the property being sold. For example, One Level, Two Levels, Three or More Levels, Multi/Split, Loft. A discreet horizontal plane of interior living space (excluding basements).
+    string levels = 6                                       [(tags) = "graphql:\"levels,optional\" bson:\"levels\""];
+    // The total number of bedrooms in the dwelling.
+    int32 bedrooms_total = 7                                [(tags) = "graphql:\"bedroomsTotal,optional\" bson:\"bedrooms_total\""];
+    /* A room containing all 4 of the 4 elements constituting a bath, which are; Toilet, Sink, Bathtub or Shower Head. A Full Bath will typically contain four elements; Sink, Toilet, Tub and Shower Head (in tub or stall).
+       However, some may considered a Sink, Toilet and Tub (without a shower) a Full Bath, others consider this to be a Three Quarter Bath. */
+    int32 bathrooms_full = 8                                [(tags) = "graphql:\"bathroomsFull,optional\" bson:\"bathrooms_full\""];
+    /* The number of partial bathrooms in the property being sold/leased. When used in combination with the BathroomsFull field, this replaces (or is the sum of) all Half and One Quarter bathrooms; 
+       and in the event BathroomsThreeQuarter is not used, BathroomsFull replaces (or is the sum of) all Full and Three Quarter baths. */
+    int32 bathrooms_partial = 9                             [(tags) = "graphql:\"bathroomsPartial,optional\" bson:\"bathrooms_partial\""];
+    // A room containing 1 of the 4 elements constituting a bath which are; Toilet, Sink, Bathtub or Shower Head. Examples are a vanity with a sink or a WC (Water Closet, which is a room with only a toilet).
+    int32 bathrooms_onequarter = 10                         [(tags) = "graphql:\"bathroomsOnequarter,optional\" bson:\"bathrooms_onequarter\""];
+    /* A room containing 3 of the 4 elements constituting a bath, which are; Toilet, Sink, Bathtub or Shower Head. A typical Three Quarter Bath will contain Sink, Toilet and Shower. 
+       Some may considered a Sink, Toilet and Tub (without a shower) a Three Quarter Bath, others consider this to be a Full Bath. */
+    int32 bathrooms_threequarter = 11                       [(tags) = "graphql:\"bathroomsThreequarter,optional\" bson:\"bathrooms_threequarter\""];
+    // A room containing 2 of the 4 elements constituting a bath, which are; Toilet, Sink, Bathtub or Shower Head. A Half Bath will typically contain a Sink and Toilet.
+    int32 bathrooms_half = 12                               [(tags) = "graphql:\"bathroomsHalf,optional\" bson:\"bathrooms_half\""];
+    // Name of the building or business park.
+    string building_name = 13                               [(tags) = "graphql:\"buildingName,optional\" bson:\"building_name\""];
+    // Features or amenities of the building or business park.
+    string building_features = 14                           [(tags) = "graphql:\"buildingFeatures,optional\" bson:\"building_features\""];
+    // Total area of the structure. Includes both finished and unfinished areas.
+    double building_area_total = 15                         [(tags) = "graphql:\"buildingAreaTotal,optional\" bson:\"building_area_total\""];
+    // The source of the measurements. This is a pick list of options showing the source of the measurement. i.e. Agent, Assessor, Estimate, etc.
+    string building_area_source = 16                        [(tags) = "graphql:\"buildingAreaSource,optional\" bson:\"building_area_source\""];
+    // The total livable area within the structure.
+    int32 living_area = 17                                  [(tags) = "graphql:\"livingArea,optional\" bson:\"living_area\""];
+    // A list describing the type or style of roof. For example Spanish Tile, Composite, Shake, etc.
+    string roof = 18                                        [(tags) = "graphql:\"roof,optional\" bson:\"roof\""];
+    // A list of features or description of the parking included in the sale/lease.
+    string parking_features = 19                            [(tags) = "graphql:\"parkingFeatures,optional\" bson:\"parking_features\""];
+    // The total number of parking spaces included in the sale.
+    int32 parking_total = 20                                [(tags) = "graphql:\"parkingTotal,optional\" bson:\"parking_total\""];
+    // Other types of parking available to, or part of, the property.
+    string other_parking = 21                               [(tags) = "graphql:\"otherParking,optional\" bson:\"other_parking\""];
+    string other_parking_spaces = 22                        [(tags) = "graphql:\"otherParkingSpaces,optional\" bson:\"other_parking_spaces\""];
+    // The number of spaces in the garage(s).
+    int32 garage_spaces = 23                                [(tags) = "graphql:\"garageSpaces,optional\" bson:\"garage_spaces\""];
+    // The number of carport spaces included in the sale.
+    int32 carport_spaces = 24                               [(tags) = "graphql:\"carportSpaces,optional\" bson:\"carport_spaces\""];
+    // The total number of garage and carport spaces.
+    int32 covered_spaces = 25                               [(tags) = "graphql:\"coveredSpaces,optional\" bson:\"covered_spaces\""];
+    // The number of open or uncovered parking spaces included in the sale.
+    int32 open_parking_spaces = 26                          [(tags) = "graphql:\"openParkingSpaces,optional\" bson:\"open_parking_spaces\""];
+    /* The year that an occupancy permit is first granted for the house or other local measure of initial habitability of the build. 
+       The type definition permits an empty value with an attribute noting that it is an unknown date or that the building is new construction. 
+       While constraints have not been applied, convention at the time of adoption has this as a four (4) digit year value. */
+    int32 year_built = 27                                   [(tags) = "graphql:\"yearBuilt,optional\" bson:\"year_built\""];
+    // The total number of floors in the building. In the case of multi-dwelling structures, this is the entire structure and not the individual dwelling being sold.
+    int32 stories_total = 28                                [(tags) = "graphql:\"storiesTotal,optional\" bson:\"stories_total\""];
+    // Does the property include a fireplace.
+    bool fireplace = 29                                     [(tags) = "graphql:\"fireplace,optional\" bson:\"fireplace\""];
+    // A list of features or description of the fireplace(s) included in the sale/lease.
+    string fireplace_features = 30                          [(tags) = "graphql:\"fireplaceFeatures,optional\" bson:\"fireplace_features\""];
+    // The total number of fireplaces included in the property.
+    int32 fireplace_total = 31                              [(tags) = "graphql:\"fireplaceTotal,optional\" bson:\"fireplace_total\""];
+    // A list of features or description of the doors included in the sale/lease.
+    string door_features = 32                               [(tags) = "graphql:\"doorFeatures,optional\" bson:\"door_features\""];
+    // A list of the type(s) of foundation on which the property sits.
+    string foundation_details = 33                          [(tags) = "graphql:\"foundationDetails,optional\" bson:\"foundation_details\""];
+    string insulation_desc = 34                             [(tags) = "graphql:\"insulationDesc,optional\" bson:\"insulation_desc\""];
+    string room_type = 35                                   [(tags) = "graphql:\"roomType,optional\" bson:\"room_type\""];
+    // Name of the builder of the property or builder's tract.
+    string builder_name = 36                                [(tags) = "graphql:\"builderName,optional\" bson:\"builder_name\""];
+    // A list or description of the accessibility features included in the sale/lease.
+    string accessibility_features = 37                      [(tags) = "graphql:\"accessibilityFeatures,optional\" bson:\"accessibility_features\""];
+    string flood_area = 38                                  [(tags) = "graphql:\"floodArea,optional\" bson:\"flood_area\""];
+    string homeowners_prot_plan = 39                        [(tags) = "graphql:\"homeownersProtPlan,optional\" bson:\"homeowners_prot_plan\""];
+    // A list of features or description of the exterior of the property included in the sale/lease.
+    string exterior_features = 40                           [(tags) = "graphql:\"exteriorFeatures,optional\" bson:\"exterior_features\""];
+    // A list of features or description of the interior of the property included in the sale/lease.
+    string interior_features = 41                           [(tags) = "graphql:\"interiorFeatures,optional\" bson:\"interior_features\""];
+    // Type of mobile/manufactured home.
+    string body_type = 42                                   [(tags) = "graphql:\"bodyType,optional\" bson:\"body_type\""];
+    // A list of information and features about the basement. i.e. None/Slab, Finished, Partially Finished, Crawl Space, Dirt, Outside Entrance, Radon Mitigation.
+    string basement = 43                                    [(tags) = "graphql:\"basement,optional\" bson:\"basement\""];
+    // A list of structures other than the main dwelling. For example, Guest House, Barn, Shed, etc.
+    string other_structures = 44                            [(tags) = "graphql:\"otherStructures,optional\" bson:\"other_structures\""];
+    // The builders model name or number for the property.
+    string builder_model = 45                               [(tags) = "graphql:\"builderModel,optional\" bson:\"builder_model\""];
+    /* The type of structure that the property completely or partially encompasses.  For example, House or Cabin are the overall structure and typically sold or leased as a whole.  
+       Multi Family and Docks may be sold in whole, but are often sold or leased by unit/slip.  This field is the type of structure as opposed to style, which is under the Architectural Style field. */
+    string structure_type = 46                              [(tags) = "graphql:\"structureType,optional\" bson:\"structure_type\""];
+    // A collection of types of rooms and details/features about the room.
+    Rooms rooms = 47                                        [(tags) = "graphql:\"rooms,optional\" bson:\"rooms\""];
+    // A list describing the condition of the property and any structures included in the sale.
+    PropertyCondition property_condition = 48               [(tags) = "graphql:\"propertyCondition,optional\" bson:\"property_condition\""];
+    float approximate_office_squarefeet = 49                [(tags) = "graphql:\"approximateOfficesquarefeet,optional\" bson:\"approximate_office_squarefeet\""];
+    float approximate_retail_squarefeet = 50                [(tags) = "graphql:\"approximateRetailSquarefeet,optional\" bson:\"approximate_retail_squarefeet\""];
+    float approximate_warehouse_squarefeet = 51             [(tags) = "graphql:\"approximateWarehouseSquarefeet,optional\" bson:\"approximate_warehouse_squarefeet\""];
+    int32 total_restrooms = 52                              [(tags) = "graphql:\"totalRestrooms,optional\" bson:\"total_restrooms\""];
+    string load = 53                                        [(tags) = "graphql:\"load,optional\" bson:\"load\""];
+    // Total area of the structure. Includes both finished and unfinished areas. (This will replace building_area_total)
+    double building_area = 54                               [(tags) = "graphql:\"buildingArea,optional\" bson:\"building_area\""];
+    string building_area_measurement = 55                   [(tags) = "graphql:\"buildingAreaMeasurement,optional\" bson:\"building_area_measurement\""];
+    string living_area_measurement = 56                     [(tags) = "graphql:\"livingAreaMeasurement,optional\" bson:\"living_area_measurement\""];
+    string skirt = 57                                       [(tags) = "graphql:\"skirt,optional\" bson:\"skirt\""];
+    string year_built_source = 58                           [(tags) = "graphql:\"yearBuiltSource,optional\" bson:\"year_built_source\""];
+    string common_walls = 59                                [(tags) = "graphql:\"commonWalls,optional\" bson:\"common_walls\""];
+    int32 bathrooms_total_integer = 60                      [(tags) = "graphql:\"bathroomsTotalInteger,optional\" bson:\"bathrooms_total_integer\""];
+    string make = 61                                        [(tags) = "graphql:\"make,optional\" bson:\"make\""];
+}
+
+// Rooms.
+message Rooms {
+    // The number of rooms in the dwelling.
+    int32 rooms_total = 1                                   [(tags) = "graphql:\"roomsTotal,optional\" bson:\"rooms_total\""];
+    // Kitchen room dimensions.
+    string kitchen_dim = 2                                  [(tags) = "graphql:\"kitchenDim,optional\" bson:\"kitchen_dim\""];
+    // Living room dimensions.
+    string living_rm_dim = 3                                [(tags) = "graphql:\"livingRmDim,optional\" bson:\"living_rm_dim\""];
+    // Master bedroom dimensions.
+    string master_br_dim = 4                                [(tags) = "graphql:\"masterBrDim,optional\" bson:\"master_br_dim\""];
+    // Dining room dimensions.
+    string dining_rm_dim = 5                                [(tags) = "graphql:\"diningRmDim,optional\" bson:\"dining_rm_dim\""];
+    // Family room dimensions.
+    string family_rm_dim = 6                                [(tags) = "graphql:\"familyRmDim,optional\" bson:\"family_rm_dim\""];
+    // Dining room description.
+    string dining_desc = 7                                  [(tags) = "graphql:\"diningDesc,optional\" bson:\"dining_desc\""];
+    // Family room description.
+    string family_room_desc = 8                             [(tags) = "graphql:\"familyRoomDesc,optional\" bson:\"family_room_desc\""];
+    // Kitchen description.
+    string kitchen_desc = 9                                 [(tags) = "graphql:\"kitchenDesc,optional\" bson:\"kitchen_desc\""];
+    // Living room description.
+    string living_rm_desc = 10                              [(tags) = "graphql:\"livingRmDesc,optional\" bson:\"living_rm_desc\""];
+    // Bedroom description.
+    string bedroom_desc = 11                                [(tags) = "graphql:\"bedroomDesc,optional\" bson:\"bedroom_desc\""];
+    // Bathroom description.
+    string bathroom_desc = 12                               [(tags) = "graphql:\"bathroomDesc,optional\" bson:\"bathroom_desc\""];
+}
+
+// PropertyCondition.
+message PropertyCondition {
+    // The property is a "fixer" or property in need of moderate or extensive repair.
+    bool is_fixer_upper = 1                                 [(tags) = "graphql:\"isFixerUpper,optional\" bson:\"is_fixer_upper\""];
+    // Is the property newly built.
+    bool is_new_construction = 2                            [(tags) = "graphql:\"isNewConstruction,optional\" bson:\"is_new_construction\""];
+}
+
+// Characteristics.
+message Characteristics {
+    // The total Acres of the lot. This field is related to the Lot Size Area and Lot Size Units and should be in sync with the values represented in those fields.
+    string lot_size_acres = 1                               [(tags) = "graphql:\"lotSizeAcres,optional\" bson:\"lot_size_acres\""];
+    // The dimensions of the lot minimally represented as length and width (i.e. 250 x 180) or a measurement of all sides of the polygon representing the property lines of the property. i.e. 30 x 50 x 120 x 60 x 22.
+    string lot_size_dimensions = 2                          [(tags) = "graphql:\"lotSizeDimensions,optional\" bson:\"lot_size_dimensions\""];
+    // A list of features or description of the lot included in the sale/lease.
+    string lot_features = 3                                 [(tags) = "graphql:\"lotFeatures,optional\" bson:\"lot_features\""];
+    // The total square footage of the lot. This field is related to the Lot Size Area and Lot Size Units and should be in sync with the values represented in those fields.
+    int32 lot_size_square_feet = 4                          [(tags) = "graphql:\"lotSizeSquareFeet,optional\" bson:\"lot_size_square_feet\""];
+    // A list of features or description of the pool included in the sale/lease.
+    string pool_features = 5                                [(tags) = "graphql:\"poolFeatures,optional\" bson:\"pool_features\""];
+    // Is the property has a privately owned pool that is included in the sale/lease.
+    bool private_pool = 6                                   [(tags) = "graphql:\"privatePool,optional\" bson:\"private_pool\""];
+    // A view as seen from the listed property.
+    string view = 7                                         [(tags) = "graphql:\"view,optional\" bson:\"view\""];
+    // Add this pick list of features and locations where the laundry is located in the property being sold. i.e. Gas Dryer Hookup, In Kitchen, In Garage, etc.
+    string laundry_features = 8                             [(tags) = "graphql:\"laundryFeatures,optional\" bson:\"laundry_features\""];
+    // A list of features or description of the spa included in the sale/lease.
+    string spa_features = 9                                 [(tags) = "graphql:\"spaFeatures,optional\" bson:\"spa_features\""];
+    // A list of features related to, or available within, the community.
+    string community_features = 10                          [(tags) = "graphql:\"communityfeatures,optional\" bson:\"community_features\""];
+    string complex_name = 11                                [(tags) = "graphql:\"complexName,optional\" bson:\"complex_name\""];
+    // The total number of units in the building, complex or community. This is not the number of units being sold, but rather the size of the community in which the dwelling being sold is located.
+    int32 number_of_units_in_community = 12                 [(tags) = "graphql:\"numberOfUnitsInCommunity,optional\" bson:\"number_of_units_in_community\""];
+    // The name, if known, of the body of water on which the property is located. (E.g., lake name, river name, ocean name, sea name, canal name).
+    string water_body_name = 13                             [(tags) = "graphql:\"waterBodyName,optional\" bson:\"water_body_name\""];
+    // Features of the waterfront on which the property is located.
+    string water_front_features = 14                        [(tags) = "graphql:\"waterFrontFeatures,optional\" bson:\"water_front_features\""];
+    // Is the property on the waterfront.
+    bool water_front = 15                                   [(tags) = "graphql:\"waterFront,optional\" bson:\"water_front\""];
+    // Pick list of types of frontage. i.e. Oceanfront, Lakefront, Golf course, etc. Information about roads or road frontage should be located in the Road Frontage Type and Road Surface Type fields.
+    string frontage_type = 16                              [(tags) = "graphql:\"frontageType,optional\" bson:\"frontage_type\""];
+    // Total number of units included in the income property, occupied or unoccupied.
+    int32 number_of_units_total = 17                        [(tags) = "graphql:\"numberOfUnitsTotal,optional\" bson:\"number_of_units_total\""];
+    bool hide_from_prelogin_search = 18                     [(tags) = "graphql:\"hideFromPreloginSearch,optional\" bson:\"hide_from_prelogin_search\""];
+    // Is the community is a senior community.
+    bool senior_community = 19                              [(tags) = "graphql:\"seniorCommunity,optional\" bson:\"senior_community\""];
+    bool is_smart_home = 20                                 [(tags) = "graphql:\"isSmartHome,optional\" bson:\"is_smart_home\""];
+    // A list of the type(s) of current use of the property. The current use of the property is an important factor in understanding the overall condition of the land and determining it's appropriateness for intended use.
+    string current_use = 21                                 [(tags) = "graphql:\"currentUse,optional\" bson:\"current_use\""];
+    // A list of the type(s) of possible or best uses of the property. Probable use gives a good indication of what the best use or potential use of the property could be. i.e. Primary, Vacation, Investment, Rental, Retirement.
+    string possible_use = 22                                [(tags) = "graphql:\"possibleUse,optional\" bson:\"possible_use\""];
+    // Total number of lots on the property or included in the sale. Land properties are often sold with multiple lots. It is important to be able to describe how many lots are in the property and not in all cases do lots have separate Parcel IDs.
+    int32 number_of_lots = 23                               [(tags) = "graphql:\"numberOfLots,optional\" bson:\"number_of_lots\""];
+    // The number of pads or spaces in the mobile home park.
+    int32 number_of_pads = 24                               [(tags) = "graphql:\"numberOfPads,optional\" bson:\"number_of_pads\""];
+    // A list of the Development Status of the property. The developmental status of land is an important factor in selling, purchasing and developing of land properties.
+    string development_status = 25                          [(tags) = "graphql:\"developmentStatus,optional\" bson:\"development_status\""];
+    // A list of types of fencing found at the property being sold.
+    string fencing = 26                                     [(tags) = "graphql:\"fencing,optional\" bson:\"fencing\""];
+    // Pick list of types of surface of the Road to access the property. The surface of the road(s) for access to the property is an important factor in determining value of the property and it’s appropriateness for intended use.
+    string road_surface_type = 27                           [(tags) = "graphql:\"roadSurfaceType,optional\" bson:\"road_surface_type\""];
+    // The person or entity responsible for road maintenance (e.g., City, County, Private).
+    string road_responsibility = 28                         [(tags) = "graphql:\"roadResponsibility,optional\" bson:\"road_responsibility\""];
+    string misc_utilities_desc = 29                         [(tags) = "graphql:\"miscUtilitiesDesc,optional\" bson:\"misc_utilities_desc\""];
+    // The property being leased is furnished, unfurnished or partially furnished.
+    string furnished = 30                                   [(tags) = "graphql:\"furnished,optional\" bson:\"furnished\""];
+    // A pick list of lengths that represent the length of the lease. i.e. Weekly, Month to Month, 6 Month Lease, 12 Month Lease, 24 Month Lease.
+    string leaseterm = 31                                   [(tags) = "graphql:\"leaseterm,optional\" bson:\"leaseterm\""];
+    bool is_renters_insurance_required = 32                  [(tags) = "graphql:\"isRentersInsuranceRequired,optional\" bson:\"is_renters_insurance_required\""];
+    int32 number_of_buildings = 33                          [(tags) = "graphql:\"numberOfBuildings,optional\" bson:\"number_of_buildings\""];
+    string lot_elevation = 34                               [(tags) = "graphql:\"lotElevation,optional\" bson:\"lot_elevation\""];
+    string lot_size_source = 35                             [(tags) = "graphql:\"lotSizeSource,optional\" bson:\"lot_size_source\""];
+    string park_name = 36                                   [(tags) = "graphql:\"parkName,optional\" bson:\"park_name\""];
+    string frontage_length = 37                             [(tags) = "graphql:\"frontageLength,optional\" bson:\"frontage_length\""];
+    GreenFeatures green_features = 38                       [(tags) = "graphql:\"greenFeatures,optional\" bson:\"green_features\""];
+}
+
+// Utilities.
+message Utilities {
+    // A list of the source(s) of water for the property.
+    string water_source = 1                                 [(tags) = "graphql:\"waterSource,optional\" bson:\"water_source\""];
+    // A list describing the sewer or septic features of the property.
+    string sewer = 2                                        [(tags) = "graphql:\"sewer,optional\" bson:\"sewer\""];
+    // A list of the utilities for the property being sold/leased.
+    string utilities = 3                                    [(tags) = "graphql:\"utilities,optional\" bson:\"utilities\""];
+    // Total number of separate electric meters on the property.
+    int32 number_of_separate_electricmeters = 4             [(tags) = "graphql:\"numberOfSeparateElectricmeters,optional\" bson:\"number_of_separate_electricmeters\""];
+    // Total number of separate gas meters on the property.
+    int32 number_of_separate_gasmeters = 5                  [(tags) = "graphql:\"numberOfSeparateGasmeters,optional\" bson:\"number_of_separate_gasmeters\""];
+    // Total number of separate water meters on the property.
+    int32 number_of_separate_watermeters = 6                [(tags) = "graphql:\"numberOfSeparateWatermeters,optional\" bson:\"number_of_separate_watermeters\""];
+}
+
+// Equipment.
+message Equipment {
+    // A list of other equipment that will be included in the sale of the property.
+    string other_equipment = 1                              [(tags) = "graphql:\"otherEquipment,optional\" bson:\"other_equipment\""];
+    // A list of the appliances that will be included in the sale/lease of the property.
+    string appliances = 2                                   [(tags) = "graphql:\"appliances,optional\" bson:\"appliances\""];
+    // A list describing the security features included in the sale/lease.
+    string security_features = 3                            [(tags) = "graphql:\"securityFeatures,optional\" bson:\"security_features\""];
+    //A list of existing appliances that the sellers include in the sale..
+    string includes = 4                                     [(tags) = "graphql:\"includes,optional\" bson:\"includes\""];
+    //A list of existing appliances that the sellers exclude in the sale..
+    string excludes = 5                                     [(tags) = "graphql:\"excludes,optional\" bson:\"excludes\""];
+    GreenFeatures green_features = 6                        [(tags) = "graphql:\"greenFeatures,optional\" bson:\"green_features\""];
+}
+
+// Business.
+message Business {
+    string ownership_type = 1                               [(tags) = "graphql:\"ownershipType,optional\" bson:\"ownership_type\""];
+    string lease_amount_frequency = 2                       [(tags) = "graphql:\"leaseAmountFrequency,optional\" bson:\"lease_amount_frequency\""];
+    int32 year_established = 3                              [(tags) = "graphql:\"yearEstablished,optional\" bson:\"year_established\""];
+    string business_type = 4                                [(tags) = "graphql:\"businessType,optional\" bson:\"business_type\""];
+}
+
+// This group is a representation of media, such as photos, virtual tours, documents/supplements, etc.
+message Media {    
+    // Total number of photos downloaded and processed.
+    int32 num_images = 1                                    [(tags) = "graphql:\"numImages,optional\" bson:\"num_images\""];
+    // Photos last modified time by MLS source system.
+    google.protobuf.Timestamp modification_timestamp = 2    [(tags) = "graphql:\"modificationTimestamp,optional\" bson:\"modification_timestamp\""];
+    // (Internal).
+    string image_hash_code = 3                              [(tags) = "graphql:\"imageHashCode,optional\" bson:\"image_hash_code\""];
+    string uuid = 4                                         [(tags) = "graphql:\"uuid,optional\" bson:\"uuid\""];
+    // Photos last modified time by internal system. This is the actual time that the photos are downloaded by the internal system.
+    google.protobuf.Timestamp last_change_timestamp = 5     [(tags) = "graphql:\"lastChangeTimestamp,optional\" bson:\"last_change_timestamp\""];
+    // A list of media information.
+    repeated MediaInfo media_info = 50                      [(tags) = "graphql:\"mediaInfo,optional\" bson:\"media_info\""];
+}
+
+// Informations on media such as photos url, dimensions etc.,
+message MediaInfo {
+    int32 index_num = 1                                     [(tags) = "graphql:\"indexNum,optional\" bson:\"index_num\""];
+    // The URI to the media file referenced by this record.
+    string media_url = 2                                    [(tags) = "graphql:\"mediaUrl,optional\" bson:\"media_url\""];
+    google.protobuf.Timestamp photos_change_timestamp = 3   [(tags) = "graphql:\"photosChangeTimestamp,optional\" bson:\"photos_change_timestamp\""];
+    // (Internal).
+    int32 image_height = 4                                  [(tags) = "graphql:\"imageHeight,optional\" bson:\"image_height\""];
+    // (Internal).
+    int32 image_width = 5                                   [(tags) = "graphql:\"imageWidth,optional\" bson:\"image_width\""];
+    // (Internal).
+    string md5 = 6                                          [(tags) = "graphql:\"md5,optional\" bson:\"md5\""];
+}
+
+// The OpenHouse is a collection of fields commonly used to record an open house event.
+message OpenHouse {
+    // Is there a open house.
+    bool is_open_homes = 1                                  [(tags) = "graphql:\"isOpenHomes,optional\" bson:\"is_open_homes\""];    
+    // A list of open homes.
+    repeated OpenHomes open_homes = 2                       [(tags) = "graphql:\"openHomes,optional\" bson:\"open_homes\""];    
+}
+
+// OpenHomes.
+message OpenHomes {
+    string hash_code = 1                                    [(tags) = "graphql:\"hashCode,optional\" bson:\"hash_code\""];
+    // The date on which the open house will occur.
+    google.protobuf.Timestamp open_house_date = 2           [(tags) = "graphql:\"openHouseDate,optional\" bson:\"open_house_date\""];
+    // The date & time the open house begins.
+    google.protobuf.Timestamp open_house_start_time = 3     [(tags) = "graphql:\"openHouseStartTime,optional\" bson:\"open_house_start_time\""];
+    // The date & time the open house ends.
+    google.protobuf.Timestamp open_house_end_time = 4       [(tags) = "graphql:\"openHouseEndTime,optional\" bson:\"open_house_end_time\""];
+    // The transactional timestamp automatically recorded by the MLS system representing the date/time the Open House was entered and made visible to members of the MLS.
+    google.protobuf.Timestamp original_entry_timestamp = 5  [(tags) = "graphql:\"originalEntryTimestamp,optional\" bson:\"original_entry_timestamp\""];
+    // The transactional timestamp automatically recorded by the MLS system representing the date/time the Open House was last modified.
+    google.protobuf.Timestamp modification_timestamp = 6    [(tags) = "graphql:\"modificationTimestamp,optional\" bson:\"modification_timestamp\""];
+    // Comments, instructions or information about the open house.
+    string open_house_remarks = 7                           [(tags) = "graphql:\"openHouseRemarks,optional\" bson:\"open_house_remarks\""];
+    // Is the open house canceled.
+    bool is_canceled = 8                                    [(tags) = "graphql:\"isCanceled,optional\" bson:\"is_canceled\""];
+    // Whether an appointment is needed or not
+    bool is_appointment_needed = 9                          [(tags) = "graphql:\"isAppointmentNeeded,optional\" bson:\"is_appointment_needed\""];
+}
+
+// LiveStreamOpenHouse.
+message LiveStreamOpenHouse {
+    // Is there a live stream open house.
+    bool is_live_stream_oh = 1                              [(tags) = "graphql:\"isLiveStreamOh,optional\" bson:\"is_live_stream_oh\""];
+    // List of live stream open homes.
+    repeated LiveStreamOpenHomes live_stream_open_homes = 2 [(tags) = "graphql:\"liveStreamOpenHomes,optional\" bson:\"live_stream_open_homes\""];
+    
+}
+
+// LiveStreamOpenHomes.
+message LiveStreamOpenHomes {
+    // Hash code.
+    string hash_code = 1                                    [(tags) = "graphql:\"hashCode,optional\" bson:\"hash_code\""];
+    // The date of the live stream open house.
+    google.protobuf.Timestamp open_house_date = 2           [(tags) = "graphql:\"openHouseDate,optional\" bson:\"open_house_date\""];
+    // The start date and time of the live stream open house.
+    google.protobuf.Timestamp open_house_start_time = 3     [(tags) = "graphql:\"openHouseStartTime,optional\" bson:\"open_house_start_time\""];
+    // The end date and time of the live stream open house.
+    google.protobuf.Timestamp open_house_end_time = 4       [(tags) = "graphql:\"openHouseEndTime,optional\" bson:\"open_house_end_time\""];
+    // The url for the live stream open house.
+    string url = 5                                          [(tags) = "graphql:\"url,optional\" bson:\"url\""];
+    // Comments for the live stream open house.
+    string comments = 6                                     [(tags) = "graphql:\"comments,optional\" bson:\"comments\""];
+}
+
+// Dash listings (internal listings).
+message Dash {
+    // The id of a listing.
+    string listing_guid = 1                         [(tags) = "graphql:\"listingGuid,optional\" bson:\"listing_guid\""];
+    // The id of a mls source.
+    string source_system_key = 2                    [(tags) = "graphql:\"sourceSystemKey,optional\" bson:\"source_system_key\""];
+    // The unique id of an listing agent.
+    string listing_agent_guid = 3                   [(tags) = "graphql:\"listingAgentGuid,optional\" bson:\"listing_agent_guid\""];
+    // The unique id of a company staff.
+    string company_staff_guid = 4                   [(tags) = "graphql:\"companyStaffGuid,optional\" bson:\"company_staff_guid\""];
+    // number of days between list date and expire date
+    int32 term_days = 5                             [(tags) = "graphql:\"termdays,optional\" bson:\"term_days\""];
+    // A list of features.
+    repeated Features features = 6                  [(tags) = "graphql:\"features,optional\" bson:\"features\""];
+    // Websites Information.
+    repeated Websites websites = 7                  [(tags) = "graphql:\"websites,optional\" bson:\"websites\""];
+
+}
+
+// Dash Listing Websites
+message Websites {
+    // Website type code
+    string website_type_code = 1             [(tags) = "graphql:\"websiteTypeCode,optional\" bson:\"website_type_code\""];
+    // Website description
+    string website_type_description = 2      [(tags) = "graphql:\"websiteTypeDescription,optional\" bson:\"website_type_description\""];
+    // Website url
+    string url = 3                           [(tags) = "graphql:\"url,optional\" bson:\"url\""];
+    // Website language code
+    string content_language_code = 4         [(tags) = "graphql:\"contentLanguageCode,optional\" bson:\"content_language_code\""];
+    // Website Language name
+    string content_language_name = 5         [(tags) = "graphql:\"contentLanguageName,optional\" bson:\"content_language_name\""];
+    // Website name
+    string website_name = 6                  [(tags) = "graphql:\"websiteName,optional\" bson:\"website_name\""];
+
+}
+
+// Dash Listing Features
+message Features {
+    // listing/property feature code
+    string feature_code = 1                         [(tags) = "graphql:\"featureCode,optional\" bson:\"feature_code\""];
+    // listing/property feature description
+    string feature_description = 2                  [(tags) = "graphql:\"featureDescription,optional\" bson:\"feature_description\""];
+    // listing/property feature group code
+    string feature_group_code = 3                   [(tags) = "graphql:\"featureGroupCode,optional\" bson:\"feature_group_code\""];
+    // listing/property feature group description
+    string feature_group_description = 4            [(tags) = "graphql:\"featureGroupDescription,optional\" bson:\"feature_group_description\""];
+}
+
+message GreenFeatures {
+    string energy_efficient = 1                             [(tags) = "graphql:\"energyEfficient,optional\" bson:\"energy_efficient\""];
+    string energy_generation = 2                            [(tags) = "graphql:\"energyGeneration,optional\" bson:\"energy_generation\""];
+    string indoor_air_quality = 3                           [(tags) = "graphql:\"indoorAirQuality,optional\" bson:\"indoor_air_quality\""];
+    string location = 4                                     [(tags) = "graphql:\"location,optional\" bson:\"location\""];
+    string sustainability = 5                               [(tags) = "graphql:\"sustainability,optional\" bson:\"sustainability\""];
+    string water_conservation = 6                           [(tags) = "graphql:\"waterConservation,optional\" bson:\"water_conservation\""];
+}
+
+// Internal. For legacy ZAP which might be deprecated in the future.
+message Internal {    
+    // Derived city for backward compatibility with legacy systems.
+    string city = 1                             [(tags) = "graphql:\"city,optional\" bson:\"city\""];
+    // normalized address from the address api
+    Location location = 2                       [(tags) = "graphql:\"location,optional\" bson:\"location\""];
+}
+
+// Realogy internal fields.
+message Realogy {    
+    // Indicates whether this listing is a Realogy listing.
+    bool is_realogy_listing = 1                  [(tags) = "graphql:\"isRealogyListing,optional\" bson:\"is_realogy_listing\""];
+    // Indicates whether this listing is a luxury listing based on internal algorithm.
+    bool is_luxury_listing = 2                   [(tags) = "graphql:\"isLuxuryListing,optional\" bson:\"is_luxury_listing\""];
+    // brand_code of the brand to which this listing belongs to
+    string brand_code = 3                        [(tags) = "graphql:\"brandCode,optional\" bson:\"brand_code\""];
+}
+
+// MasterId. Unique id internally generated for a listing such as listing agent, listing office, address etc.,
+message MasterId {
+    // Listing master id.
+    string listing_master_id = 1                [(tags) = "graphql:\"listingMasterId,optional\" bson:\"listing_master_id\""];
+    // Property master id.
+    string property_master_id = 2               [(tags) = "graphql:\"propertyMasterId,optional\" bson:\"property_master_id\""];
+    // Listing agent master id.
+    string list_agent_master_id = 3             [(tags) = "graphql:\"listAgentMasterId,optional\" bson:\"list_agent_master_id\""];
+    // Listing office master id.
+    string list_office_master_id = 4            [(tags) = "graphql:\"listOfficeMasterId,optional\" bson:\"list_office_master_id\""];
+    // Co-listing agent master id.
+    string co_list_agent_master_id = 5          [(tags) = "graphql:\"coListAgentMasterId,optional\" bson:\"co_list_agent_master_id\""];
+    // Co-listing office master id.
+    string co_list_office_master_id = 6         [(tags) = "graphql:\"coListOfficeMasterId,optional\" bson:\"co_list_office_master_id\""];
+    // Buyer agent master id.
+    string buyer_agent_master_id = 7            [(tags) = "graphql:\"buyerAgentMasterId,optional\" bson:\"buyer_agent_master_id\""];
+    // Buyer office master id.
+    string buyer_office_master_id = 8           [(tags) = "graphql:\"buyerOfficeMasterId,optional\" bson:\"buyer_office_master_id\""];
+    // Co-buyer agent master id.
+    string co_buyer_agent_master_id = 9         [(tags) = "graphql:\"coBuyerAgentMasterId,optional\" bson:\"co_buyer_agent_master_id\""];
+    // Co-buyer office master id.
+    string co_buyer_office_master_id = 10       [(tags) = "graphql:\"coBuyerOfficeMasterId,optional\" bson:\"co_buyer_office_master_id\""];
+    // Address master id.
+    string address_master_id = 11               [(tags) = "graphql:\"addressMasterId,optional\" bson:\"address_master_id\""];
+    // Company master id.
+    string company_master_id = 12               [(tags) = "graphql:\"companyMasterId,optional\" bson:\"company_master_id\""];
+    // Team master id.
+    string team_master_id = 13                  [(tags) = "graphql:\"teamMasterId,optional\" bson:\"team_master_id\""];
+
+}

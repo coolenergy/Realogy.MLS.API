@@ -1,0 +1,52 @@
+grpc:
+  port: 9080
+  network: tcp
+
+gateway:
+  port: 9081
+  network: tcp
+
+api:
+  pagination:
+    limit_default: 20
+    limit_max: 250
+  stream:
+    deadline_secs: 180
+  by_source:
+    allowed_last_change_days: 30
+  by_address:
+    # these are pre-defined search indexes. check mongodb atlas for more details.
+    # addressSearchIndex.unparsed.simple - "unparsed_address" search analyzer is defined as "simple".
+    # addressSearchIndex.unparsed.standard - "unparsed_address" search analyzer is defined as "standard".
+    # search_index: "addressSearchIndex.unparsed.standard"
+    search_index: "addressSearchIndex_unparsed_standard"
+  auth:
+    accessRules: "0oaor7ejybgrubkqt0h7,[\"/realogy.api.mls.v1.MlsListingService/GetRealogyListings\"*\"/realogy.api.mls.v1.MlsListingService/GetMlsListingByListingId\"*\"/realogy.api.mls.v1.MlsListingService/AddMlsListings\"];0oa175di9npgjcepn0h8,[\"/realogy.api.mls.v1.MlsListingService/GetMlsListingByListingId\"]"
+
+aws:
+  region: "us-west-2"
+  ssm:
+    basepath: "/realogy/services/mls-listings-service/local/"
+  local:
+    active: false # disable this flag for aws environments
+    endpoint:
+      ssm: "http://localhost:4566"
+log:
+  formatter: text   # json, text
+  level: debug      # trace > debug > info > warning > error > fatal > panic
+
+mongodb:
+  url: "localhost:27017"
+  user: root
+  pass: example
+  name: mls
+  prefix: mongodb
+  options: connect=direct
+  collections:
+    listings: listings
+  maxQueryTimeSecs: 10 # in seconds
+
+prometheus:
+  port: 9082
+
+tracing: false
